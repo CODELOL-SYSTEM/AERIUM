@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
@@ -54,8 +55,7 @@ let currentUsername = "";
 let isAdmin = false;
 let authMode = "login";
 let currentLanguage = localStorage.getItem("aeriumLanguage") || "en";
-let unsubscribeOrders = null;
-let unsubscribeAdminOrders = null;
+
 const chatListeners = new Map();
 
 const $ = (id) => document.getElementById(id);
@@ -101,8 +101,11 @@ const translations = {
     loggedOut:"You are signed out.", logout:"Sign out", noPermission:"You do not have permission.",
     fileTooLarge:"This image is too large. Try another image.",
     chooseImage:"Choose an image", adminOnly:"Administrator access only.",
-    order:"Order", other:"Other", languageChanged:"Language updated."
+    order:"Order", other:"Other", languageChanged:"Language updated.",
+    orderError:"Your project could not be created. Please try again.",
+    imageError:"Your image could not be uploaded. Your project may already have been created."
   },
+
   fr: {
     navHome:"Accueil", navServices:"Services", navOrders:"Mes commandes", navAdmin:"Admin",
     login:"Connexion", register:"Créer un compte", heroEyebrow:"Studio créatif indépendant",
@@ -143,8 +146,11 @@ const translations = {
     loggedOut:"Vous êtes déconnecté.", logout:"Déconnexion", noPermission:"Vous n'avez pas la permission.",
     fileTooLarge:"Cette image est trop lourde. Essayez-en une autre.",
     chooseImage:"Choisir une image", adminOnly:"Réservé à l'administration.",
-    order:"Commande", other:"Autre", languageChanged:"Langue mise à jour."
+    order:"Commande", other:"Autre", languageChanged:"Langue mise à jour.",
+    orderError:"Votre commande n'a pas pu être créée. Réessayez.",
+    imageError:"L'image n'a pas pu être envoyée. Votre commande a peut-être déjà été créée."
   },
+
   de: {
     navHome:"Startseite", navServices:"Leistungen", navOrders:"Meine Aufträge", navAdmin:"Admin",
     login:"Anmelden", register:"Konto erstellen", heroEyebrow:"Unabhängiges Kreativstudio",
@@ -185,7 +191,9 @@ const translations = {
     loggedOut:"Du bist abgemeldet.", logout:"Abmelden", noPermission:"Keine Berechtigung.",
     fileTooLarge:"Dieses Bild ist zu groß. Versuche ein anderes Bild.",
     chooseImage:"Bild auswählen", adminOnly:"Nur für Administratoren.",
-    order:"Auftrag", other:"Andere", languageChanged:"Sprache aktualisiert."
+    order:"Auftrag", other:"Andere", languageChanged:"Sprache aktualisiert.",
+    orderError:"Dein Auftrag konnte nicht erstellt werden. Bitte versuche es erneut.",
+    imageError:"Das Bild konnte nicht hochgeladen werden. Dein Auftrag wurde möglicherweise bereits erstellt."
   }
 };
 
@@ -195,40 +203,65 @@ function t(key) {
 
 function applyTranslations() {
   document.documentElement.lang = currentLanguage;
+
   document.querySelectorAll("[data-i18n]").forEach(element => {
     const key = element.dataset.i18n;
+
     if (translations[currentLanguage]?.[key]) {
       element.innerHTML = translations[currentLanguage][key];
     }
   });
-  $("languageSelect").value = currentLanguage;
-  $("authSubmit").textContent = authMode === "login" ? t("login") : t("register");
-  $("accountButton").textContent = currentUser ? t("logout") : t("login");
+
+  if ($("languageSelect")) {
+    $("languageSelect").value = currentLanguage;
+  }
+
+  if ($("authSubmit")) {
+    $("authSubmit").textContent = authMode === "login" ? t("login") : t("register");
+  }
+
+  if ($("accountButton")) {
+    $("accountButton").textContent = currentUser ? t("logout") : t("login");
+  }
 }
 
 function toast(message) {
   const element = $("toast");
+  if (!element) return;
+
   element.textContent = message;
   element.classList.add("show");
+
   clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => element.classList.remove("show"), 2800);
+
+  toast.timer = setTimeout(() => {
+    element.classList.remove("show");
+  }, 2800);
 }
 
 function showNotice(id, message, type = "error") {
   const element = $(id);
+  if (!element) return;
+
   element.textContent = message;
   element.className = `notice show ${type}`;
 }
 
 function clearNotice(id) {
   const element = $(id);
+  if (!element) return;
+
   element.textContent = "";
   element.className = "notice";
 }
 
 function escapeHTML(value = "") {
   return String(value).replace(/[&<>"']/g, char => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
   })[char]);
 }
 
@@ -280,8 +313,10 @@ $("accountButton").addEventListener("click", async () => {
 $("languageSelect").addEventListener("change", event => {
   currentLanguage = event.target.value;
   localStorage.setItem("aeriumLanguage", currentLanguage);
+
   applyTranslations();
   renderServiceCards();
+
   toast(t("languageChanged"));
 });
 
@@ -322,7 +357,9 @@ function renderServiceCards() {
       <div class="service-icon" style="color:${service.color}">${service.icon}</div>
       <h3>${escapeHTML(t(service.title))}</h3>
       <p>${escapeHTML(t(service.description))}</p>
-      <button class="text-link" data-service="${escapeHTML(service.id)}">${escapeHTML(t("create"))} ↗</button>
+      <button class="text-link" data-service="${escapeHTML(service.id)}">
+        ${escapeHTML(t("create"))} ↗
+      </button>
     </article>
   `).join("");
 
@@ -333,7 +370,10 @@ function renderServiceCards() {
     button.addEventListener("click", () => {
       $("orderService").value = button.dataset.service;
       showPage("services");
-      $("orderForm").scrollIntoView({ behavior: "smooth", block: "center" });
+      $("orderForm").scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
     });
   });
 }
@@ -346,10 +386,15 @@ renderServiceCards();
 
 function setAuthMode(mode) {
   authMode = mode;
+
   $("loginTab").classList.toggle("active", mode === "login");
   $("registerTab").classList.toggle("active", mode === "register");
+
   $("authSubmit").textContent = mode === "login" ? t("login") : t("register");
-  $("authPassword").autocomplete = mode === "login" ? "current-password" : "new-password";
+
+  $("authPassword").autocomplete =
+    mode === "login" ? "current-password" : "new-password";
+
   clearNotice("authNotice");
 }
 
@@ -373,6 +418,7 @@ $("authForm").addEventListener("submit", async event => {
   }
 
   const email = usernameToEmail(username);
+
   $("authSubmit").disabled = true;
   $("authSubmit").textContent = t("sending");
 
@@ -389,7 +435,11 @@ $("authForm").addEventListener("submit", async event => {
         throw new Error("username_taken");
       }
 
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      const credential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       await setDoc(usernameRef, {
         uid: credential.user.uid,
@@ -406,10 +456,12 @@ $("authForm").addEventListener("submit", async event => {
       showNotice("authNotice", t("accountCreated"), "success");
       toast(t("accountCreated"));
       showPage("orders");
+
     } else {
       await signInWithEmailAndPassword(auth, email, password);
       showPage("orders");
     }
+
   } catch (error) {
     console.error(error);
 
@@ -422,9 +474,11 @@ $("authForm").addEventListener("submit", async event => {
     } else {
       showNotice("authNotice", t("registerError"));
     }
+
   } finally {
     $("authSubmit").disabled = false;
-    $("authSubmit").textContent = authMode === "login" ? t("login") : t("register");
+    $("authSubmit").textContent =
+      authMode === "login" ? t("login") : t("register");
   }
 });
 
@@ -448,6 +502,7 @@ onAuthStateChanged(auth, async user => {
       } else if (isAdmin) {
         currentUsername = "POE13";
       }
+
     } catch (error) {
       console.error("Profile error:", error);
     }
@@ -455,13 +510,22 @@ onAuthStateChanged(auth, async user => {
 
   $("userLabel").textContent = user ? currentUsername : "";
   $("accountButton").textContent = user ? t("logout") : t("login");
+
   $("adminNav").classList.toggle("hidden", !isAdmin);
   $("orderLoginNotice").classList.toggle("hidden", !!user);
   $("orderForm").classList.toggle("hidden", !user);
 
   if (!user) {
-    $("ordersList").innerHTML = `<div class="empty">${escapeHTML(t("signInOrders"))}</div>`;
+    $("ordersList").innerHTML =
+      `<div class="empty">${escapeHTML(t("signInOrders"))}</div>`;
+
     $("adminOrders").innerHTML = "";
+
+    for (const unsubscribe of chatListeners.values()) {
+      unsubscribe();
+    }
+
+    chatListeners.clear();
   }
 
   applyTranslations();
@@ -475,12 +539,12 @@ onAuthStateChanged(auth, async user => {
 
 /* =========================================================
    IMAGE COMPRESSION
-   Images are saved directly in Firestore.
+   Images are optional.
    No Firebase Storage is used.
 ========================================================= */
 
 async function compressImage(file) {
-  if (!file.type.startsWith("image/")) {
+  if (!file || !file.type.startsWith("image/")) {
     throw new Error("invalid_image");
   }
 
@@ -495,14 +559,30 @@ async function compressImage(file) {
     });
 
     const maxDimension = 1200;
-    const ratio = Math.min(1, maxDimension / Math.max(image.width, image.height));
+
+    const ratio = Math.min(
+      1,
+      maxDimension / Math.max(image.width, image.height)
+    );
+
     const canvas = document.createElement("canvas");
 
     canvas.width = Math.max(1, Math.round(image.width * ratio));
     canvas.height = Math.max(1, Math.round(image.height * ratio));
 
     const context = canvas.getContext("2d");
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    if (!context) {
+      throw new Error("compression_failed");
+    }
+
+    context.drawImage(
+      image,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
     let quality = 0.82;
     let blob = await canvasToBlob(canvas, quality);
@@ -524,6 +604,7 @@ async function compressImage(file) {
       mime: "image/webp",
       size: blob.size
     };
+
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -532,8 +613,11 @@ async function compressImage(file) {
 function canvasToBlob(canvas, quality) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
-      if (blob) resolve(blob);
-      else reject(new Error("compression_failed"));
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("compression_failed"));
+      }
     }, "image/webp", quality);
   });
 }
@@ -541,8 +625,10 @@ function canvasToBlob(canvas, quality) {
 function blobToDataURL(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+
     reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error("file_read_failed"));
+
     reader.readAsDataURL(blob);
   });
 }
@@ -551,20 +637,23 @@ function blobToDataURL(blob) {
    ORDER IMAGE PREVIEW
 ========================================================= */
 
-$("referenceFiles").addEventListener("change", async event => {
+$("referenceFiles").addEventListener("change", event => {
   const files = [...event.target.files].slice(0, 3);
   $("referencePreview").innerHTML = "";
 
   for (const file of files) {
     const image = document.createElement("img");
+
     image.alt = file.name;
     image.src = URL.createObjectURL(file);
+
     $("referencePreview").appendChild(image);
   }
 });
 
 /* =========================================================
    CREATE ORDER
+   IMPORTANT: An order can be created without images.
 ========================================================= */
 
 $("orderForm").addEventListener("submit", async event => {
@@ -581,13 +670,21 @@ $("orderForm").addEventListener("submit", async event => {
     return showNotice("orderNotice", t("fillFields"));
   }
 
-  const selectedFiles = [...$("referenceFiles").files].slice(0, 3);
+  // Images are optional. An empty array is completely valid.
+  const selectedFiles = [
+    ...($("referenceFiles").files || [])
+  ].slice(0, 3);
+
   const submitButton = $("submitOrder");
+
   submitButton.disabled = true;
   submitButton.textContent = t("sending");
 
+  let orderRef = null;
+
   try {
-    const orderRef = await addDoc(collection(db, "orders"), {
+    // First create the order, even when there are no images.
+    orderRef = await addDoc(collection(db, "orders"), {
       uid: currentUser.uid,
       username: currentUsername,
       service: $("orderService").value,
@@ -600,33 +697,52 @@ $("orderForm").addEventListener("submit", async event => {
       updatedAt: serverTimestamp()
     });
 
+    // Only try to upload images if the user selected some.
     for (const file of selectedFiles) {
       const compressed = await compressImage(file);
 
-      await addDoc(collection(db, "orders", orderRef.id, "files"), {
-        uid: currentUser.uid,
-        username: currentUsername,
-        type: "reference",
-        name: compressed.name,
-        mime: compressed.mime,
-        dataUrl: compressed.dataUrl,
-        createdAt: serverTimestamp()
-      });
+      await addDoc(
+        collection(db, "orders", orderRef.id, "files"),
+        {
+          uid: currentUser.uid,
+          username: currentUsername,
+          type: "reference",
+          name: compressed.name,
+          mime: compressed.mime,
+          dataUrl: compressed.dataUrl,
+          createdAt: serverTimestamp()
+        }
+      );
     }
 
     $("orderForm").reset();
     $("referencePreview").innerHTML = "";
+
     showNotice("orderNotice", t("orderCreated"), "success");
     toast(t("orderCreated"));
+
     showPage("orders");
+
   } catch (error) {
     console.error("Create order error:", error);
 
     if (error.message === "image_too_large") {
       showNotice("orderNotice", t("fileTooLarge"));
-    } else {
+
+    } else if (error.message === "invalid_image") {
       showNotice("orderNotice", t("uploadError"));
+
+    } else if (orderRef) {
+      // The order was created, but an optional image failed.
+      showNotice("orderNotice", t("imageError"));
+
+      toast(t("imageError"));
+
+    } else {
+      // The order itself failed, not an image upload.
+      showNotice("orderNotice", t("orderError"));
     }
+
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = t("sendRequest");
@@ -645,61 +761,127 @@ function statusLabel(status) {
     completed: "statusCompleted",
     cancelled: "statusCancelled"
   };
+
   return t(map[status] || "statusPending");
 }
 
 function formatDate(timestamp) {
   if (!timestamp) return "—";
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-  return date.toLocaleDateString(currentLanguage === "fr" ? "fr-FR" : currentLanguage === "de" ? "de-DE" : "en-GB");
+
+  const date = timestamp.toDate
+    ? timestamp.toDate()
+    : new Date(timestamp);
+
+  return date.toLocaleDateString(
+    currentLanguage === "fr"
+      ? "fr-FR"
+      : currentLanguage === "de"
+        ? "de-DE"
+        : "en-GB"
+  );
 }
 
 function orderCardHTML(order, id, adminMode = false) {
   const status = order.status || "pending";
-  const statusClass = status === "completed" ? "completed" : status === "cancelled" ? "cancelled" : "";
+
+  const statusClass =
+    status === "completed"
+      ? "completed"
+      : status === "cancelled"
+        ? "cancelled"
+        : "";
 
   return `
     <article class="order-card" id="order-${escapeHTML(id)}">
+
       <div class="order-top">
         <div>
           <h3>${escapeHTML(order.service || t("order"))}</h3>
+
           <div class="order-meta">
-            ${adminMode ? `${escapeHTML(t("customer"))}: ${escapeHTML(order.username || "—")} · ` : ""}
+            ${adminMode
+              ? `${escapeHTML(t("customer"))}: ${escapeHTML(order.username || "—")} · `
+              : ""}
             ${escapeHTML(t("created"))}: ${escapeHTML(formatDate(order.createdAt))}
           </div>
         </div>
-        <span class="status ${statusClass}">${escapeHTML(statusLabel(status))}</span>
+
+        <span class="status ${statusClass}">
+          ${escapeHTML(statusLabel(status))}
+        </span>
       </div>
 
       <div class="order-actions">
-        <button class="btn secondary" data-open-order="${escapeHTML(id)}">${escapeHTML(t("details"))}</button>
-        <button class="btn ghost" data-open-chat="${escapeHTML(id)}">${escapeHTML(t("openChat"))}</button>
+        <button class="btn secondary" data-open-order="${escapeHTML(id)}">
+          ${escapeHTML(t("details"))}
+        </button>
+
+        <button class="btn ghost" data-open-chat="${escapeHTML(id)}">
+          ${escapeHTML(t("openChat"))}
+        </button>
       </div>
 
       <div class="order-detail hidden" id="detail-${escapeHTML(id)}">
-        <p><strong>${escapeHTML(t("style"))}:</strong> ${escapeHTML(order.style || "—")}</p>
-        <p><strong>${escapeHTML(t("colors"))}:</strong> ${escapeHTML(order.colors || "—")}</p>
-        <p><strong>${escapeHTML(t("textToInclude"))}:</strong> ${escapeHTML(order.text || "—")}</p>
-        <p><strong>${escapeHTML(t("description"))}:</strong><br>${escapeHTML(order.description || "—")}</p>
+
+        <p>
+          <strong>${escapeHTML(t("style"))}:</strong>
+          ${escapeHTML(order.style || "—")}
+        </p>
+
+        <p>
+          <strong>${escapeHTML(t("colors"))}:</strong>
+          ${escapeHTML(order.colors || "—")}
+        </p>
+
+        <p>
+          <strong>${escapeHTML(t("textToInclude"))}:</strong>
+          ${escapeHTML(order.text || "—")}
+        </p>
+
+        <p>
+          <strong>${escapeHTML(t("description"))}:</strong><br>
+          ${escapeHTML(order.description || "—")}
+        </p>
+
         <div class="file-preview" id="files-${escapeHTML(id)}"></div>
+
         ${adminMode ? adminControlsHTML(id, status) : ""}
       </div>
 
       <div class="chat-box hidden" id="chat-${escapeHTML(id)}">
+
         <div class="chat-messages" id="messages-${escapeHTML(id)}">
           <div class="empty">${escapeHTML(t("noMessages"))}</div>
         </div>
+
         <form class="chat-compose" data-message-form="${escapeHTML(id)}">
-          <input name="message" maxlength="1500" placeholder="${escapeHTML(t("messagePlaceholder"))}" required>
-          <button class="btn" type="submit">${escapeHTML(t("send"))}</button>
+          <input
+            name="message"
+            maxlength="1500"
+            placeholder="${escapeHTML(t("messagePlaceholder"))}"
+            required
+          >
+
+          <button class="btn" type="submit">
+            ${escapeHTML(t("send"))}
+          </button>
         </form>
+
         ${adminMode ? `
           <div style="padding:10px;border-top:1px solid var(--line)">
             <label>${escapeHTML(t("uploadDelivery"))}</label>
-            <input type="file" accept="image/png,image/jpeg,image/webp" data-delivery-file="${escapeHTML(id)}">
-          </div>` : ""}
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              data-delivery-file="${escapeHTML(id)}"
+            >
+          </div>
+        ` : ""}
+
         <div class="file-preview" id="chatfiles-${escapeHTML(id)}"></div>
+
       </div>
+
     </article>
   `;
 }
@@ -707,14 +889,33 @@ function orderCardHTML(order, id, adminMode = false) {
 function adminControlsHTML(id, status) {
   return `
     <div class="admin-tools" style="margin-top:15px">
+
       <select id="status-${escapeHTML(id)}">
-        <option value="pending" ${status === "pending" ? "selected" : ""}>${escapeHTML(t("statusPending"))}</option>
-        <option value="progress" ${status === "progress" ? "selected" : ""}>${escapeHTML(t("statusProgress"))}</option>
-        <option value="review" ${status === "review" ? "selected" : ""}>${escapeHTML(t("statusReview"))}</option>
-        <option value="completed" ${status === "completed" ? "selected" : ""}>${escapeHTML(t("statusCompleted"))}</option>
-        <option value="cancelled" ${status === "cancelled" ? "selected" : ""}>${escapeHTML(t("statusCancelled"))}</option>
+        <option value="pending" ${status === "pending" ? "selected" : ""}>
+          ${escapeHTML(t("statusPending"))}
+        </option>
+
+        <option value="progress" ${status === "progress" ? "selected" : ""}>
+          ${escapeHTML(t("statusProgress"))}
+        </option>
+
+        <option value="review" ${status === "review" ? "selected" : ""}>
+          ${escapeHTML(t("statusReview"))}
+        </option>
+
+        <option value="completed" ${status === "completed" ? "selected" : ""}>
+          ${escapeHTML(t("statusCompleted"))}
+        </option>
+
+        <option value="cancelled" ${status === "cancelled" ? "selected" : ""}>
+          ${escapeHTML(t("statusCancelled"))}
+        </option>
       </select>
-      <button class="btn" data-save-status="${escapeHTML(id)}">${escapeHTML(t("saveStatus"))}</button>
+
+      <button class="btn" data-save-status="${escapeHTML(id)}">
+        ${escapeHTML(t("saveStatus"))}
+      </button>
+
     </div>
   `;
 }
@@ -725,11 +926,13 @@ function adminControlsHTML(id, status) {
 
 async function renderCustomerOrders() {
   if (!currentUser) {
-    $("ordersList").innerHTML = `<div class="empty">${escapeHTML(t("signInOrders"))}</div>`;
+    $("ordersList").innerHTML =
+      `<div class="empty">${escapeHTML(t("signInOrders"))}</div>`;
     return;
   }
 
-  $("ordersList").innerHTML = `<div class="empty">${escapeHTML(t("sending"))}</div>`;
+  $("ordersList").innerHTML =
+    `<div class="empty">${escapeHTML(t("sending"))}</div>`;
 
   try {
     const ordersQuery = query(
@@ -741,7 +944,8 @@ async function renderCustomerOrders() {
     const snapshot = await getDocs(ordersQuery);
 
     if (snapshot.empty) {
-      $("ordersList").innerHTML = `<div class="empty">${escapeHTML(t("noOrders"))}</div>`;
+      $("ordersList").innerHTML =
+        `<div class="empty">${escapeHTML(t("noOrders"))}</div>`;
       return;
     }
 
@@ -750,9 +954,12 @@ async function renderCustomerOrders() {
     ).join("");
 
     attachOrderActions(false);
+
   } catch (error) {
     console.error("Customer orders error:", error);
-    $("ordersList").innerHTML = `<div class="empty">${escapeHTML(t("noPermission"))}</div>`;
+
+    $("ordersList").innerHTML =
+      `<div class="empty">${escapeHTML(t("noPermission"))}</div>`;
   }
 }
 
@@ -762,18 +969,25 @@ async function renderCustomerOrders() {
 
 async function renderAdminOrders() {
   if (!isAdmin) {
-    $("adminOrders").innerHTML = `<div class="empty">${escapeHTML(t("adminOnly"))}</div>`;
+    $("adminOrders").innerHTML =
+      `<div class="empty">${escapeHTML(t("adminOnly"))}</div>`;
     return;
   }
 
-  $("adminOrders").innerHTML = `<div class="empty">${escapeHTML(t("sending"))}</div>`;
+  $("adminOrders").innerHTML =
+    `<div class="empty">${escapeHTML(t("sending"))}</div>`;
 
   try {
-    const ordersQuery = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+    const ordersQuery = query(
+      collection(db, "orders"),
+      orderBy("createdAt", "desc")
+    );
+
     const snapshot = await getDocs(ordersQuery);
 
     if (snapshot.empty) {
-      $("adminOrders").innerHTML = `<div class="empty">${escapeHTML(t("noOrders"))}</div>`;
+      $("adminOrders").innerHTML =
+        `<div class="empty">${escapeHTML(t("noOrders"))}</div>`;
       return;
     }
 
@@ -782,9 +996,12 @@ async function renderAdminOrders() {
     ).join("");
 
     attachOrderActions(true);
+
   } catch (error) {
     console.error("Admin orders error:", error);
-    $("adminOrders").innerHTML = `<div class="empty">${escapeHTML(t("noPermission"))}</div>`;
+
+    $("adminOrders").innerHTML =
+      `<div class="empty">${escapeHTML(t("noPermission"))}</div>`;
   }
 }
 
@@ -793,10 +1010,12 @@ async function renderAdminOrders() {
 ========================================================= */
 
 function attachOrderActions(adminMode) {
+
   document.querySelectorAll("[data-open-order]").forEach(button => {
     button.addEventListener("click", async () => {
       const id = button.dataset.openOrder;
       const detail = $(`detail-${id}`);
+
       detail.classList.toggle("hidden");
 
       if (!detail.classList.contains("hidden")) {
@@ -806,23 +1025,35 @@ function attachOrderActions(adminMode) {
   });
 
   document.querySelectorAll("[data-open-chat]").forEach(button => {
-    button.addEventListener("click", async () => {
+    button.addEventListener("click", () => {
       const id = button.dataset.openChat;
       const chat = $(`chat-${id}`);
+
       chat.classList.toggle("hidden");
 
       if (!chat.classList.contains("hidden")) {
         listenToMessages(id);
-        await loadOrderFiles(id, `chatfiles-${id}`);
+
+        // Image loading is optional and cannot block chat.
+        loadOrderFiles(id, `chatfiles-${id}`).catch(error => {
+          console.error("Optional chat images error:", error);
+        });
       }
     });
   });
+
+  /* -------------------------------------------------------
+     SEND MESSAGE WITHOUT IMAGE
+  ------------------------------------------------------- */
 
   document.querySelectorAll("[data-message-form]").forEach(form => {
     form.addEventListener("submit", async event => {
       event.preventDefault();
 
-      if (!currentUser) return;
+      if (!currentUser) {
+        toast(t("loginFirst"));
+        return;
+      }
 
       const orderId = form.dataset.messageForm;
       const input = form.querySelector("input[name='message']");
@@ -831,27 +1062,43 @@ function attachOrderActions(adminMode) {
       if (!message) return;
 
       const submit = form.querySelector("button");
+
       submit.disabled = true;
 
       try {
-        await addDoc(collection(db, "orders", orderId, "messages"), {
-          uid: currentUser.uid,
-          username: currentUsername,
-          text: message.slice(0, 1500),
-          createdAt: serverTimestamp()
-        });
+        await addDoc(
+          collection(db, "orders", orderId, "messages"),
+          {
+            uid: currentUser.uid,
+            username: currentUsername,
+            text: message.slice(0, 1500),
+            createdAt: serverTimestamp()
+          }
+        );
 
         input.value = "";
+
       } catch (error) {
-        console.error(error);
-        toast(t("messageError"));
+        console.error("Message sending error:", error);
+
+        if (error.code === "permission-denied") {
+          toast(t("noPermission"));
+        } else {
+          toast(t("messageError"));
+        }
+
       } finally {
         submit.disabled = false;
       }
     });
   });
 
+  /* -------------------------------------------------------
+     ADMIN ACTIONS
+  ------------------------------------------------------- */
+
   if (adminMode) {
+
     document.querySelectorAll("[data-save-status]").forEach(button => {
       button.addEventListener("click", async () => {
         const id = button.dataset.saveStatus;
@@ -865,40 +1112,60 @@ function attachOrderActions(adminMode) {
 
           toast(t("statusSaved"));
           renderAdminOrders();
+
         } catch (error) {
-          console.error(error);
+          console.error("Status update error:", error);
           toast(t("noPermission"));
         }
       });
     });
 
+    /* -----------------------------------------------------
+       ADMIN DELIVERY IMAGE
+    ----------------------------------------------------- */
+
     document.querySelectorAll("[data-delivery-file]").forEach(input => {
       input.addEventListener("change", async () => {
         const file = input.files?.[0];
+
         if (!file) return;
 
         try {
           const compressed = await compressImage(file);
           const orderId = input.dataset.deliveryFile;
 
-          await addDoc(collection(db, "orders", orderId, "files"), {
-            uid: currentUser.uid,
-            username: currentUsername,
-            type: "delivery",
-            name: compressed.name,
-            mime: compressed.mime,
-            dataUrl: compressed.dataUrl,
-            createdAt: serverTimestamp()
-          });
+          await addDoc(
+            collection(db, "orders", orderId, "files"),
+            {
+              uid: currentUser.uid,
+              username: currentUsername,
+              type: "delivery",
+              name: compressed.name,
+              mime: compressed.mime,
+              dataUrl: compressed.dataUrl,
+              createdAt: serverTimestamp()
+            }
+          );
 
           toast(t("send"));
-          await loadOrderFiles(orderId, `chatfiles-${orderId}`);
-        } catch (error) {
-          console.error(error);
-          toast(error.message === "image_too_large" ? t("fileTooLarge") : t("uploadError"));
-        }
 
-        input.value = "";
+          await loadOrderFiles(
+            orderId,
+            `chatfiles-${orderId}`
+          );
+
+        } catch (error) {
+          console.error("Delivery image error:", error);
+
+          toast(
+            error.message === "image_too_large"
+              ? t("fileTooLarge")
+              : t("uploadError")
+          );
+
+        } finally {
+          input.value = "";
+        }
       });
     });
   }
@@ -916,54 +1183,88 @@ function listenToMessages(orderId) {
     orderBy("createdAt", "asc")
   );
 
-  const unsubscribe = onSnapshot(messagesQuery, snapshot => {
-    const container = $(`messages-${orderId}`);
-    if (!container) return;
+  const unsubscribe = onSnapshot(
+    messagesQuery,
 
-    if (snapshot.empty) {
-      container.innerHTML = `<div class="empty">${escapeHTML(t("noMessages"))}</div>`;
-      return;
-    }
+    snapshot => {
+      const container = $(`messages-${orderId}`);
 
-    container.innerHTML = snapshot.docs.map(item => {
-      const message = item.data();
-      const mine = message.uid === currentUser?.uid;
+      if (!container) return;
 
-      return `
-        <div class="message ${mine ? "mine" : ""}">
-          <small>${escapeHTML(message.username || "User")} · ${escapeHTML(formatDate(message.createdAt))}</small>
-          <p>${escapeHTML(message.text || "")}</p>
-          <button class="text-link" data-translate-message="${escapeHTML(item.id)}" data-original="${escapeHTML(message.text || "")}" style="margin-top:7px">
-            ${escapeHTML(t("translate"))}
-          </button>
-          <p class="translated-text muted" id="translated-${escapeHTML(item.id)}"></p>
-        </div>
-      `;
-    }).join("");
+      if (snapshot.empty) {
+        container.innerHTML =
+          `<div class="empty">${escapeHTML(t("noMessages"))}</div>`;
+        return;
+      }
 
-    container.scrollTop = container.scrollHeight;
+      container.innerHTML = snapshot.docs.map(item => {
+        const message = item.data();
+        const mine = message.uid === currentUser?.uid;
 
-    container.querySelectorAll("[data-translate-message]").forEach(button => {
-      button.addEventListener("click", async () => {
-        const original = button.dataset.original;
-        const target = $(`translated-${button.dataset.translateMessage}`);
+        return `
+          <div class="message ${mine ? "mine" : ""}">
 
-        button.disabled = true;
-        target.textContent = "…";
+            <small>
+              ${escapeHTML(message.username || "User")}
+              ·
+              ${escapeHTML(formatDate(message.createdAt))}
+            </small>
 
-        try {
-          const translated = await translateMessage(original, currentLanguage);
-          target.textContent = translated;
-        } catch {
-          target.textContent = original;
-        } finally {
-          button.disabled = false;
-        }
+            <p>${escapeHTML(message.text || "")}</p>
+
+            <button
+              class="text-link"
+              data-translate-message="${escapeHTML(item.id)}"
+              data-original="${escapeHTML(message.text || "")}"
+              style="margin-top:7px"
+            >
+              ${escapeHTML(t("translate"))}
+            </button>
+
+            <p
+              class="translated-text muted"
+              id="translated-${escapeHTML(item.id)}"
+            ></p>
+
+          </div>
+        `;
+      }).join("");
+
+      container.scrollTop = container.scrollHeight;
+
+      container.querySelectorAll("[data-translate-message]").forEach(button => {
+        button.addEventListener("click", async () => {
+          const original = button.dataset.original;
+
+          const target = $(
+            `translated-${button.dataset.translateMessage}`
+          );
+
+          button.disabled = true;
+          target.textContent = "…";
+
+          try {
+            const translated = await translateMessage(
+              original,
+              currentLanguage
+            );
+
+            target.textContent = translated;
+
+          } catch {
+            target.textContent = original;
+
+          } finally {
+            button.disabled = false;
+          }
+        });
       });
-    });
-  }, error => {
-    console.error("Chat listener error:", error);
-  });
+    },
+
+    error => {
+      console.error("Chat listener error:", error);
+    }
+  );
 
   chatListeners.set(orderId, unsubscribe);
 }
@@ -976,14 +1277,25 @@ async function translateMessage(message, language) {
   const targetLanguage = language;
   const sourceLanguage = "auto";
 
-  const url = new URL("https://api.mymemory.translated.net/get");
+  const url = new URL(
+    "https://api.mymemory.translated.net/get"
+  );
+
   url.searchParams.set("q", message.slice(0, 450));
-  url.searchParams.set("langpair", `${sourceLanguage}|${targetLanguage}`);
+
+  url.searchParams.set(
+    "langpair",
+    `${sourceLanguage}|${targetLanguage}`
+  );
 
   const response = await fetch(url);
-  if (!response.ok) throw new Error("translation_failed");
+
+  if (!response.ok) {
+    throw new Error("translation_failed");
+  }
 
   const data = await response.json();
+
   return data.responseData?.translatedText || message;
 }
 
@@ -993,6 +1305,7 @@ async function translateMessage(message, language) {
 
 async function loadOrderFiles(orderId, containerId) {
   const container = $(containerId);
+
   if (!container) return;
 
   try {
@@ -1010,15 +1323,33 @@ async function loadOrderFiles(orderId, containerId) {
 
       return `
         <div class="file-item">
-          <a href="${escapeHTML(file.dataUrl)}" target="_blank" rel="noopener">
-            <img src="${escapeHTML(file.dataUrl)}" alt="${escapeHTML(file.name || "Project image")}">
+
+          <a
+            href="${escapeHTML(file.dataUrl)}"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="${escapeHTML(file.dataUrl)}"
+              alt="${escapeHTML(file.name || "Project image")}"
+            >
           </a>
-          <small>${escapeHTML(file.type === "delivery" ? "✓ Final design" : file.name || "Reference")}</small>
+
+          <small>
+            ${escapeHTML(
+              file.type === "delivery"
+                ? "✓ Final design"
+                : file.name || "Reference"
+            )}
+          </small>
+
         </div>
       `;
     }).join("");
+
   } catch (error) {
     console.error("Files loading error:", error);
+    throw error;
   }
 }
 
@@ -1030,10 +1361,8 @@ window.addEventListener("beforeunload", () => {
   for (const unsubscribe of chatListeners.values()) {
     unsubscribe();
   }
-  chatListeners.clear();
 
-  if (unsubscribeOrders) unsubscribeOrders();
-  if (unsubscribeAdminOrders) unsubscribeAdminOrders();
+  chatListeners.clear();
 });
 
 applyTranslations();
