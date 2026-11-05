@@ -39,7 +39,7 @@ const firebaseConfig = {
   measurementId: "G-CW98PGD6RQ"
 };
 
-const ADMIN_UID = "REPLACE_WITH_ADMIN_FIREBASE_UID";
+const ADMIN_UID = "lZT1OcyUB3UkYGAK6C9vAKHKKD23";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
