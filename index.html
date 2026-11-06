@@ -1,361 +1,1231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#080914">
-  <title>Aérium Design | Creative Studio</title>
+  <meta name="theme-color" content="#080a0f">
+  <meta name="description" content="AÉRIUM DESIGN, studio de création graphique. Photos de profil et miniatures YouTube sur mesure.">
+  <title>AÉRIUM DESIGN | Creative Studio</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --bg: #080914;
-      --panel: rgba(18, 20, 39, .78);
-      --panel2: #111326;
+      --bg: #080a0f;
+      --surface: #10131b;
+      --surface-2: #151925;
       --line: rgba(255,255,255,.09);
-      --text: #f5f5ff;
-      --muted: #9295ad;
-      --purple: #9b72ff;
-      --blue: #58a6ff;
-      --pink: #f27bdb;
-      --green: #72e6ba;
-      --danger: #ff7185;
-      --radius: 22px;
+      --text: #f5f6fa;
+      --muted: #9299a9;
+      --blue: #6585ff;
+      --blue-light: #91a5ff;
+      --radius: 18px;
+      --font: "DM Sans", sans-serif;
+      --heading: "Manrope", sans-serif;
     }
+
     * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
     body {
       margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(ellipse at 15% 0%, rgba(112,75,255,.19), transparent 35%),
-        radial-gradient(ellipse at 90% 20%, rgba(55,135,255,.13), transparent 32%),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
-      font-family: "DM Sans", sans-serif;
+      font-family: var(--font);
+      overflow-x: hidden;
     }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .13;
-      background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-      background-size: 52px 52px;
-      mask-image: linear-gradient(to bottom, black, transparent 85%);
-    }
+
     button, input, textarea, select { font: inherit; }
     button { cursor: pointer; }
-    .shell { width: min(1180px, calc(100% - 36px)); margin: auto; position: relative; }
-    header {
-      height: 82px; display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--line); position: relative; z-index: 5;
+    a { color: inherit; text-decoration: none; }
+
+    ::selection { background: var(--blue); color: white; }
+
+    .container {
+      width: min(1160px, calc(100% - 44px));
+      margin: auto;
     }
-    .brand { display: flex; align-items: center; gap: 12px; font-family: "Space Grotesk"; font-weight: 700; letter-spacing: -.7px; font-size: 21px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      background: rgba(8,10,15,.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 25px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-family: var(--heading);
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-size: 15px;
+    }
+
     .brand-mark {
-      width: 38px; height: 38px; border-radius: 13px;
-      display: grid; place-items: center; color: white; font-size: 20px;
-      background: linear-gradient(135deg, #a87cff, #527eff 65%, #5ce1d0);
-      box-shadow: 0 0 28px rgba(132,103,255,.35), inset 0 1px 1px #ffffff80;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      background: linear-gradient(145deg, #89a0ff, #4566e9);
+      border-radius: 10px;
+      box-shadow: 0 5px 22px rgba(84,112,255,.25);
     }
-    .brand span:last-child { color: #a9a5ff; }
-    nav { display: flex; align-items: center; gap: 8px; }
-    .nav-btn, .lang-select {
-      border: 0; background: transparent; color: var(--muted); padding: 10px 13px;
-      border-radius: 12px; font-size: 13px; font-weight: 600;
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
     }
-    .nav-btn:hover, .nav-btn.active { color: white; background: rgba(255,255,255,.07); }
-    .lang-select { border: 1px solid var(--line); color: white; outline: none; background: #141629; }
-    .user-area { display: flex; gap: 10px; align-items: center; }
-    .small-user { color: var(--muted); font-size: 12px; }
+
+    .nav-links a { transition: color .2s ease; }
+    .nav-links a:hover { color: white; }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .btn {
-      border: 1px solid transparent; border-radius: 13px; padding: 12px 17px;
-      color: white; font-weight: 700; font-size: 13px; transition: .2s;
-      background: linear-gradient(110deg, #9269ff, #657eff);
-      box-shadow: 0 8px 25px rgba(112,91,255,.2);
+      border: 1px solid transparent;
+      border-radius: 11px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
-    .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-    .btn.secondary { background: rgba(255,255,255,.06); border-color: var(--line); box-shadow: none; }
-    .btn.ghost { background: transparent; border-color: var(--line); box-shadow: none; color: #c8c9d9; }
-    .btn.danger { background: rgba(255,113,133,.12); border-color: rgba(255,113,133,.25); color: #ff9cac; box-shadow: none; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-    main { padding: 46px 0 90px; }
-    .hero { display: grid; grid-template-columns: 1.08fr .92fr; gap: 40px; align-items: center; padding: 48px 0 70px; }
-    .eyebrow { color: #b6a1ff; font-size: 11px; text-transform: uppercase; letter-spacing: 2.6px; font-weight: 800; }
-    h1, h2, h3 { font-family: "Space Grotesk", sans-serif; }
-    h1 { font-size: clamp(42px, 6vw, 72px); line-height: 1.02; letter-spacing: -4px; margin: 18px 0; }
-    .gradient-text { background: linear-gradient(100deg, #c6a8ff, #79baff 55%, #85eedc); color: transparent; background-clip: text; }
-    .hero p { color: var(--muted); max-width: 510px; line-height: 1.8; font-size: 15px; }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
-    .visual-stage {
-      min-height: 390px; position: relative; display: grid; place-items: center;
-      perspective: 900px;
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0) scale(.98); }
+
+    .btn-primary {
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 7px 22px rgba(101,133,255,.18);
     }
-    .orb {
-      position: absolute; width: 260px; height: 260px; border-radius: 50%;
-      background: radial-gradient(circle at 30% 25%, #f6d8ff, #a66dff 22%, #526eff 55%, #1a2050 75%);
-      filter: blur(.2px); box-shadow: 0 0 70px #795eff55, inset -20px -25px 45px #08091488;
-      animation: float 7s ease-in-out infinite;
+
+    .btn-primary:hover {
+      background: #7893ff;
+      box-shadow: 0 10px 28px rgba(101,133,255,.3);
     }
-    .orb::after { content: ""; position: absolute; inset: 13px; border-radius: inherit; border: 1px solid #ffffff60; box-shadow: inset 0 0 30px #ffffff25; }
-    .orbit { position: absolute; width: 390px; height: 135px; border: 1px solid #a48aff75; border-radius: 50%; transform: rotate(-28deg); box-shadow: 0 0 25px #8d72ff22; }
-    .orbit.two { transform: rotate(48deg); width: 330px; height: 175px; border-color: #6bd8ff66; }
-    .glass-tile {
-      position: absolute; width: 160px; height: 110px; border-radius: 20px;
-      background: linear-gradient(135deg, #ffffff30, #ffffff06);
-      border: 1px solid #ffffff3a; backdrop-filter: blur(16px);
-      box-shadow: 0 20px 50px #0008, inset 0 1px 1px #ffffff55;
-      transform: rotateY(-18deg) rotateX(12deg);
+
+    .btn-secondary {
+      color: white;
+      background: rgba(255,255,255,.04);
+      border-color: var(--line);
     }
-    .glass-tile.one { top: 48px; right: 12px; }
-    .glass-tile.two { bottom: 30px; left: 0; width: 130px; height: 92px; transform: rotateY(18deg) rotateX(-10deg); }
-    .tile-dot { width: 34px; height: 34px; border-radius: 11px; margin: 17px; background: linear-gradient(135deg,#f5a5ff,#7a81ff); box-shadow: 0 0 25px #a16bff88; }
-    .tile-lines { height: 5px; border-radius: 8px; background: #ffffff55; margin: -7px 17px 12px; width: 75px; }
-    .tile-lines.short { width: 48px; opacity: .5; }
-    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin: 25px 0; }
-    .section-head h2 { font-size: 31px; margin: 8px 0 0; letter-spacing: -1.4px; }
-    .section-head p { color: var(--muted); font-size: 13px; margin: 0; }
-    .services { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-    .service-card, .panel, .order-card {
-      background: linear-gradient(145deg, rgba(25,27,52,.9), rgba(13,15,31,.88));
-      border: 1px solid var(--line); border-radius: var(--radius);
-      box-shadow: 0 20px 55px #0002, inset 0 1px 0 #ffffff08;
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.2);
     }
-    .service-card { padding: 22px; min-height: 225px; position: relative; overflow: hidden; }
-    .service-card::after { content: ""; position: absolute; width: 150px; height: 150px; border-radius: 50%; right: -65px; bottom: -75px; filter: blur(2px); opacity: .28; background: var(--glow); }
-    .service-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; font-size: 22px; background: var(--icon-bg); border: 1px solid #ffffff15; margin-bottom: 28px; }
-    .service-card h3 { font-size: 19px; margin: 0 0 9px; }
-    .service-card p { color: var(--muted); font-size: 13px; line-height: 1.65; margin: 0; }
-    .service-card .text-link { margin-top: 20px; color: #c4b2ff; background: transparent; border: 0; padding: 0; font-size: 12px; font-weight: 800; }
-    .content-section { margin-top: 76px; }
-    .panel { padding: 26px; }
-    .hidden { display: none !important; }
-    .page-title { margin: 0 0 7px; font-size: 34px; letter-spacing: -1.5px; }
-    .muted { color: var(--muted); }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-    .field.full { grid-column: 1/-1; }
-    label { color: #c8c9d9; font-size: 12px; font-weight: 700; }
-    input, textarea, select {
-      width: 100%; color: white; background: rgba(5,7,19,.65);
-      border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; outline: none;
+
+    .btn-danger {
+      color: #ffb7b7;
+      background: rgba(255,80,80,.08);
+      border-color: rgba(255,80,80,.2);
     }
-    input:focus, textarea:focus, select:focus { border-color: #927aff; box-shadow: 0 0 0 3px #927aff18; }
-    input::placeholder, textarea::placeholder { color: #62667f; }
-    textarea { min-height: 110px; resize: vertical; }
-    select option { background: #15172b; }
-    .auth-wrap { max-width: 470px; margin: 30px auto; }
-    .auth-tabs { display: flex; gap: 7px; background: #090b19; padding: 5px; border-radius: 13px; margin: 20px 0; }
-    .auth-tab { flex: 1; border: 0; color: var(--muted); background: transparent; border-radius: 10px; padding: 11px; font-weight: 700; }
-    .auth-tab.active { color: white; background: #252443; }
-    .notice { padding: 12px 14px; border-radius: 12px; font-size: 12px; margin: 13px 0; display: none; }
+
+    .hero {
+      min-height: 690px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 620px;
+      height: 620px;
+      right: -180px;
+      top: -100px;
+      background: radial-gradient(circle, rgba(75,104,255,.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      left: -230px;
+      bottom: -240px;
+      background: radial-gradient(circle, rgba(75,104,255,.10), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      padding: 100px 0;
+      animation: heroEnter .8s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--blue-light);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2.2px;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 23px;
+      height: 1px;
+      background: var(--blue);
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin: 26px 0 22px;
+      font-family: var(--heading);
+      font-size: clamp(48px, 8vw, 88px);
+      line-height: 1.02;
+      letter-spacing: -5px;
+      font-weight: 800;
+    }
+
+    .gradient-text {
+      background: linear-gradient(100deg, #fff 15%, #a7b7ff 65%, #6485ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-description {
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin-top: 55px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hero-meta strong {
+      display: block;
+      color: white;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .section {
+      padding: 105px 0;
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 25px;
+      margin-bottom: 38px;
+    }
+
+    .section-heading h2 {
+      margin: 13px 0 0;
+      font-family: var(--heading);
+      font-size: clamp(30px, 5vw, 47px);
+      letter-spacing: -2px;
+    }
+
+    .section-heading p {
+      max-width: 390px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .service-card {
+      position: relative;
+      min-height: 290px;
+      overflow: hidden;
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(145deg, rgba(101,133,255,.10), transparent 55%),
+        var(--surface);
+      transition: border-color .25s ease, transform .25s ease, background .25s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(121,150,255,.5);
+      background:
+        linear-gradient(145deg, rgba(101,133,255,.16), transparent 65%),
+        var(--surface);
+    }
+
+    .service-number {
+      color: var(--blue-light);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .service-card h3 {
+      margin: 28px 0 12px;
+      font-family: var(--heading);
+      font-size: 27px;
+      letter-spacing: -.8px;
+    }
+
+    .service-card p {
+      max-width: 390px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .service-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 18px;
+      color: var(--blue-light);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .service-link span { transition: transform .2s ease; }
+    .service-card:hover .service-link span { transform: translateX(5px); }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .process-card {
+      padding: 27px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 15px;
+    }
+
+    .process-card .step {
+      color: var(--blue-light);
+      font-family: var(--heading);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .process-card h3 {
+      margin: 20px 0 10px;
+      font-size: 17px;
+    }
+
+    .process-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .cta-panel {
+      padding: 55px;
+      border: 1px solid rgba(113,143,255,.22);
+      border-radius: 22px;
+      background:
+        linear-gradient(110deg, rgba(76,105,255,.17), transparent 75%),
+        var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .cta-panel h2 {
+      margin: 0 0 10px;
+      font-family: var(--heading);
+      font-size: clamp(26px, 4vw, 38px);
+      letter-spacing: -1.5px;
+    }
+
+    .cta-panel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 30px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* APPLICATION */
+
+    .app-section {
+      min-height: 75vh;
+      padding: 65px 0 100px;
+      animation: sectionEnter .35s ease both;
+    }
+
+    .app-heading {
+      margin-bottom: 30px;
+    }
+
+    .app-heading h2 {
+      margin: 12px 0;
+      font-family: var(--heading);
+      font-size: clamp(30px, 5vw, 44px);
+      letter-spacing: -1.8px;
+    }
+
+    .app-heading p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .panel {
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+    }
+
+    .auth-wrap {
+      width: min(460px, 100%);
+      margin: 30px auto;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      padding: 5px;
+      margin-bottom: 24px;
+      background: #090b11;
+      border-radius: 12px;
+    }
+
+    .tab {
+      padding: 12px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .tab.active {
+      color: white;
+      background: var(--surface-2);
+    }
+
+    .field {
+      margin-bottom: 17px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #dfe3ef;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input, .field textarea, .field select {
+      width: 100%;
+      padding: 14px 15px;
+      color: white;
+      background: #090c13;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .field input:focus, .field textarea:focus, .field select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(101,133,255,.12);
+    }
+
+    .field textarea {
+      min-height: 115px;
+      resize: vertical;
+    }
+
+    .field select option { background: #10131b; }
+
+    .notice {
+      display: none;
+      margin: 15px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
     .notice.show { display: block; }
-    .notice.error { color: #ff9cac; background: #ff718514; border: 1px solid #ff71852b; }
-    .notice.success { color: #8de8c2; background: #72e6ba14; border: 1px solid #72e6ba2b; }
-    .upload-box { border: 1px dashed #7772a5; background: #8d78ff09; border-radius: 14px; padding: 17px; }
-    .upload-box input { padding: 9px; }
-    .image-list { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 10px; }
-    .image-list img { width: 80px; height: 70px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
-    .orders-list { display: grid; gap: 13px; margin-top: 20px; }
-    .order-card { padding: 19px; }
-    .order-top { display: flex; justify-content: space-between; gap: 15px; align-items: center; }
-    .order-card h3 { margin: 0 0 5px; font-size: 17px; }
-    .order-meta { font-size: 11px; color: var(--muted); }
-    .status { display: inline-flex; border-radius: 20px; padding: 6px 10px; font-size: 10px; font-weight: 800; background: #9b72ff20; color: #c6afff; }
-    .status.completed { background: #72e6ba18; color: #85e9c0; }
-    .status.cancelled { background: #ff71851a; color: #ff9cac; }
-    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
-    .order-detail { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--line); }
-    .chat-box { margin-top: 14px; border: 1px solid var(--line); border-radius: 15px; overflow: hidden; background: #090b18; }
-    .chat-messages { padding: 14px; max-height: 310px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .message { max-width: 85%; padding: 10px 12px; border-radius: 13px; background: #1a1d35; align-self: flex-start; }
-    .message.mine { align-self: flex-end; background: linear-gradient(120deg,#604caa,#4359a5); }
-    .message small { display: block; color: #c4c5d8; opacity: .7; font-size: 10px; margin-bottom: 5px; }
-    .message p { margin: 0; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .chat-compose { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); }
-    .chat-compose input { flex: 1; }
-    .file-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-    .file-item { background: #ffffff09; padding: 7px; border: 1px solid var(--line); border-radius: 12px; }
-    .file-item img { display: block; width: 130px; height: 95px; object-fit: cover; border-radius: 8px; }
-    .file-item small { display: block; color: var(--muted); margin-top: 6px; max-width: 130px; overflow-wrap: anywhere; }
-    .admin-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .admin-tools select { width: auto; padding: 9px; }
-    .empty { text-align: center; color: var(--muted); padding: 35px 15px; border: 1px dashed var(--line); border-radius: 15px; }
-    footer { border-top: 1px solid var(--line); padding: 25px 0 35px; color: #74778f; font-size: 11px; display: flex; justify-content: space-between; gap: 15px; }
-    .toast { position: fixed; bottom: 22px; right: 22px; z-index: 20; padding: 13px 17px; border-radius: 13px; background: #20233e; border: 1px solid #ffffff20; box-shadow: 0 15px 40px #0008; font-size: 13px; opacity: 0; transform: translateY(10px); transition: .25s; pointer-events: none; }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    @keyframes float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-14px) rotate(5deg); } }
-    @media(max-width:850px) {
-      nav { gap: 0; } .nav-btn { padding: 9px; font-size: 11px; }
-      .hero { grid-template-columns: 1fr; padding-top: 35px; gap: 5px; }
-      .visual-stage { min-height: 300px; } .services { grid-template-columns: 1fr 1fr; }
+    .notice.error {
+      color: #ffb9b9;
+      background: rgba(255,70,70,.09);
+      border: 1px solid rgba(255,70,70,.2);
     }
-    @media(max-width:600px) {
-      header { height: auto; min-height: 75px; flex-wrap: wrap; padding: 15px 0; gap: 12px; }
-      nav { order: 3; width: 100%; overflow-x: auto; }
-      .user-area { margin-left: auto; }
-      .small-user { display: none; }
-      .services, .form-grid { grid-template-columns: 1fr; }
-      .field.full { grid-column: auto; }
-      h1 { letter-spacing: -2px; }
-      .section-head { align-items: start; flex-direction: column; }
-      .panel { padding: 18px; }
-      footer { flex-direction: column; }
+
+    .notice.success {
+      color: #b8ffd5;
+      background: rgba(50,210,130,.08);
+      border: 1px solid rgba(50,210,130,.2);
+    }
+
+    .full { width: 100%; }
+
+    .back-link {
+      display: inline-flex;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .back-link:hover { color: white; }
+
+    .order-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .side-info {
+      padding: 25px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .side-info h3 { margin: 0 0 12px; }
+    .side-info p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .file-input {
+      padding: 14px;
+      border: 1px dashed rgba(255,255,255,.2);
+      border-radius: 11px;
+      background: #090c13;
+    }
+
+    .file-list {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .dashboard-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .dashboard-top h2 {
+      margin: 0;
+      font-family: var(--heading);
+      font-size: 30px;
+    }
+
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .order-card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .order-card h3 { margin: 0 0 9px; font-size: 16px; }
+    .order-card p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .status {
+      display: inline-flex;
+      padding: 6px 9px;
+      border-radius: 7px;
+      color: #c4d0ff;
+      background: rgba(101,133,255,.12);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .order-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .order-actions .btn {
+      padding: 9px 12px;
+      font-size: 11px;
+    }
+
+    .chat-panel {
+      margin-top: 20px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chat-header h3 { margin: 0; font-size: 15px; }
+
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 420px;
+      min-height: 160px;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .message {
+      max-width: min(78%, 520px);
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #1a1e2a;
+      align-self: flex-start;
+      overflow-wrap: anywhere;
+    }
+
+    .message.mine {
+      align-self: flex-end;
+      background: rgba(101,133,255,.2);
+      border: 1px solid rgba(101,133,255,.18);
+    }
+
+    .message small {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--blue-light);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .message p {
+      margin: 0;
+      color: #eef0f8;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 9px;
+      padding: 15px;
+      border-top: 1px solid var(--line);
+    }
+
+    .chat-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 13px 14px;
+      color: white;
+      background: #090c13;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .artwork-area {
+      padding: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .artwork-area h4 {
+      margin: 0 0 15px;
+      font-size: 13px;
+    }
+
+    .artwork-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 13px;
+    }
+
+    .artwork-card {
+      padding: 10px;
+      background: #090c13;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      min-width: 0;
+    }
+
+    .artwork-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: #05070b;
+      border-radius: 8px;
+    }
+
+    .artwork-card p {
+      margin: 10px 0;
+      color: #e9ecf6;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .artwork-card .btn {
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .payment-note {
+      margin-top: 10px;
+      padding: 11px;
+      color: #d6ddff;
+      background: rgba(101,133,255,.1);
+      border: 1px solid rgba(101,133,255,.18);
+      border-radius: 9px;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .admin-order {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+
+    .admin-order h3 { margin: 0 0 6px; font-size: 14px; }
+    .admin-order p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .admin-order .btn { white-space: nowrap; }
+
+    .admin-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      padding: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .empty {
+      padding: 35px 20px;
+      color: var(--muted);
+      text-align: center;
+      background: var(--surface);
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      font-size: 13px;
+    }
+
+    .hidden { display: none !important; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .65s ease, transform .65s cubic-bezier(.2,.7,.2,1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes heroEnter {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes sectionEnter {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+
+    @media (max-width: 800px) {
+      .nav-links { display: none; }
+      .hero { min-height: 600px; }
+      .section { padding: 75px 0; }
+      .section-heading { display: block; }
+      .section-heading p { margin-top: 15px; }
+      .process-grid { grid-template-columns: 1fr; }
+      .order-layout { grid-template-columns: 1fr; }
+      .cta-panel { padding: 32px; display: block; }
+      .cta-panel .btn { margin-top: 22px; }
+    }
+
+    @media (max-width: 580px) {
+      .container { width: min(100% - 28px, 1160px); }
+      .topbar { height: 66px; }
+      .brand { font-size: 12px; }
+      .brand-mark { width: 30px; height: 30px; }
+      .nav-actions .btn { padding: 10px 12px; font-size: 11px; }
+      h1 { letter-spacing: -2.8px; }
+      .hero-description { font-size: 14px; }
+      .hero-meta { gap: 20px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .service-card { min-height: 250px; padding: 26px; }
+      .panel { padding: 20px; }
+      .orders-grid { grid-template-columns: 1fr; }
+      .dashboard-top { align-items: flex-start; flex-direction: column; }
+      .chat-form { flex-wrap: wrap; }
+      .chat-form input { flex-basis: 100%; }
+      .chat-form button { width: 100%; }
+      .admin-order { align-items: flex-start; flex-direction: column; }
+      .admin-controls { grid-template-columns: 1fr; }
     }
   </style>
 </head>
+
 <body>
-  <div class="shell">
-    <header>
-      <div class="brand"><div class="brand-mark">✦</div><div>AÉRIUM <span>DESIGN</span></div></div>
-      <nav>
-        <button class="nav-btn active" data-page="home" data-i18n="navHome">Home</button>
-        <button class="nav-btn" data-page="services" data-i18n="navServices">Services</button>
-        <button class="nav-btn" data-page="orders" data-i18n="navOrders">My orders</button>
-        <button class="nav-btn hidden" id="adminNav" data-page="admin" data-i18n="navAdmin">Admin</button>
+  <header class="topbar" id="mainHeader">
+    <div class="container nav">
+      <a class="brand" href="#" onclick="showHome();return false;">
+        <span class="brand-mark">A</span>
+        <span>AÉRIUM DESIGN</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#process">Fonctionnement</a>
       </nav>
-      <div class="user-area">
-        <span class="small-user" id="userLabel"></span>
-        <select class="lang-select" id="languageSelect" aria-label="Language">
-          <option value="en">EN</option><option value="fr">FR</option><option value="de">DE</option>
-        </select>
-        <button class="btn secondary" id="accountButton" data-i18n="login">Sign in</button>
+
+      <div class="nav-actions">
+        <button class="btn btn-secondary" onclick="showApp('authSection')">Connexion</button>
+        <button class="btn btn-primary" onclick="startOrder('Photo de profil')">Commander</button>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main>
-      <section id="page-home">
-        <div class="hero">
+  <main id="publicSite">
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <span class="eyebrow">Independent creative studio</span>
+          <h1>Votre image.<br><span class="gradient-text">Votre identité.</span></h1>
+          <p class="hero-description">
+            Des créations graphiques pensées pour vous démarquer.
+            Une direction artistique soignée, des visuels sur mesure
+            et un espace de commande simple pour suivre votre projet.
+          </p>
+
+          <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="startOrder('Photo de profil')">Créer mon projet <span>↗</span></button>
+            <a class="btn btn-secondary" href="#services">Découvrir les services</a>
+          </div>
+
+          <div class="hero-meta">
+            <div><strong>Sur mesure</strong>Chaque création est personnalisée</div>
+            <div><strong>Direct</strong>Échange avec le studio</div>
+            <div><strong>Sécurisé</strong>Livraison après validation</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="services">
+      <div class="container">
+        <div class="section-heading reveal">
           <div>
-            <div class="eyebrow" data-i18n="heroEyebrow">Independent creative studio</div>
-            <h1 data-i18n="heroTitle">Make your<br><span class="gradient-text">visual identity</span><br>unforgettable.</h1>
-            <p data-i18n="heroText">We create bold visuals with a sharp eye for detail. From profile pictures to YouTube thumbnails, give your ideas a signature look.</p>
-            <div class="hero-actions">
-              <button class="btn" data-go="services" data-i18n="exploreServices">Explore services ↗</button>
-              <button class="btn secondary" data-go="orders" data-i18n="trackOrder">Track an order</button>
-            </div>
+            <span class="eyebrow">Nos services</span>
+            <h2>Un visuel qui vous ressemble.</h2>
           </div>
-          <div class="visual-stage" aria-hidden="true">
-            <div class="orbit"></div><div class="orbit two"></div><div class="orb"></div>
-            <div class="glass-tile one"><div class="tile-dot"></div><div class="tile-lines"></div><div class="tile-lines short"></div></div>
-            <div class="glass-tile two"><div class="tile-dot"></div><div class="tile-lines"></div><div class="tile-lines short"></div></div>
-          </div>
+          <p>Choisissez votre création, expliquez votre idée et échangez directement avec le studio.</p>
         </div>
 
-        <div class="section-head">
-          <div><div class="eyebrow" data-i18n="whatWeDo">What we create</div><h2 data-i18n="servicesTitle">Designed to stand out.</h2></div>
-          <p data-i18n="servicesSub">Three ways to upgrade your visual world.</p>
-        </div>
-        <div class="services" id="homeServices"></div>
-      </section>
+        <div class="services-grid">
+          <article class="service-card reveal">
+            <span class="service-number">01 / PROFILE DESIGN</span>
+            <h3>Photo de profil</h3>
+            <p>Une identité visuelle travaillée pour vos réseaux, votre chaîne ou votre communauté.</p>
+            <a href="#" class="service-link" onclick="startOrder('Photo de profil');return false;">Commander <span>↗</span></a>
+          </article>
 
-      <section id="page-services" class="hidden">
-        <div class="section-head">
-          <div><div class="eyebrow">AÉRIUM / SERVICES</div><h2 data-i18n="servicesTitle">Designed to stand out.</h2></div>
-          <p data-i18n="servicesSub">Choose your creative direction.</p>
+          <article class="service-card reveal">
+            <span class="service-number">02 / THUMBNAIL DESIGN</span>
+            <h3>Miniature YouTube</h3>
+            <p>Une miniature personnalisée pour donner à vos vidéos une présentation plus forte et plus professionnelle.</p>
+            <a href="#" class="service-link" onclick="startOrder('Miniature YouTube');return false;">Commander <span>↗</span></a>
+          </article>
         </div>
-        <div class="services" id="allServices"></div>
-        <div class="panel content-section">
-          <div class="eyebrow" data-i18n="startProject">Start a project</div>
-          <h2 class="page-title" data-i18n="orderTitle">Tell us what you imagine.</h2>
-          <p class="muted" data-i18n="orderIntro">Share your idea and references. You can follow the progress from your account.</p>
-          <div id="orderLoginNotice" class="notice error show" data-i18n="needLogin">Sign in to create an order.</div>
-          <form id="orderForm">
-            <div class="form-grid">
-              <div class="field">
-                <label data-i18n="service">Service</label>
-                <select id="orderService" required>
-                  <option value="Profile picture">Profile picture</option>
-                  <option value="YouTube thumbnail">YouTube thumbnail</option>
-                  <option value="Creative pack">Creative pack</option>
-                </select>
-              </div>
-              <div class="field">
-                <label data-i18n="style">Visual style</label>
-                <select id="orderStyle">
-                  <option value="Minimal">Minimal</option><option value="Gaming">Gaming</option>
-                  <option value="Futuristic">Futuristic</option><option value="Luxury">Luxury</option>
-                  <option value="3D">3D</option><option value="Other">Other</option>
-                </select>
-              </div>
-              <div class="field">
-                <label data-i18n="colors">Preferred colors</label>
-                <input id="orderColors" placeholder="e.g. violet, blue, silver">
-              </div>
-              <div class="field">
-                <label data-i18n="textToInclude">Text to include</label>
-                <input id="orderText" placeholder="Your name, title...">
-              </div>
-              <div class="field full">
-                <label data-i18n="description">Project description</label>
-                <textarea id="orderDescription" required placeholder="Describe your idea, mood, details..."></textarea>
-              </div>
-              <div class="field full">
-                <label data-i18n="references">Reference images (optional)</label>
-                <div class="upload-box">
-                  <input type="file" id="referenceFiles" accept="image/png,image/jpeg,image/webp" multiple>
-                  <div class="muted" style="font-size:11px;margin-top:7px" data-i18n="imageLimit">Images are automatically compressed. Maximum 3 images.</div>
-                  <div class="image-list" id="referencePreview"></div>
-                </div>
-              </div>
-            </div>
-            <button class="btn" id="submitOrder" type="submit" data-i18n="sendRequest">Send project request ↗</button>
-          </form>
-          <div class="notice" id="orderNotice"></div>
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <section id="page-auth" class="hidden">
-        <div class="auth-wrap panel">
-          <div class="eyebrow">AÉRIUM / ACCOUNT</div>
-          <h2 class="page-title" data-i18n="welcome">Welcome back.</h2>
-          <p class="muted" data-i18n="accountIntro">Sign in or create your creative workspace.</p>
-          <div class="auth-tabs">
-            <button class="auth-tab active" id="loginTab" data-i18n="login">Sign in</button>
-            <button class="auth-tab" id="registerTab" data-i18n="register">Create account</button>
+    <section class="section" id="process">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div>
+            <span class="eyebrow">Le processus</span>
+            <h2>De l'idée au résultat.</h2>
           </div>
-          <form id="authForm">
-            <div class="field" id="usernameField">
-              <label data-i18n="username">Username</label>
-              <input id="authUsername" autocomplete="username" minlength="3" maxlength="20" required placeholder="Your username">
-            </div>
-            <div class="field">
-              <label data-i18n="password">Password</label>
-              <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••">
-            </div>
-            <button class="btn" id="authSubmit" type="submit" style="width:100%" data-i18n="login">Sign in</button>
-          </form>
+          <p>Un processus clair, avec un suivi directement depuis votre espace client.</p>
+        </div>
+
+        <div class="process-grid">
+          <article class="process-card reveal">
+            <span class="step">ÉTAPE 01</span>
+            <h3>Votre demande</h3>
+            <p>Choisissez votre service et décrivez le style que vous recherchez.</p>
+          </article>
+          <article class="process-card reveal">
+            <span class="step">ÉTAPE 02</span>
+            <h3>La création</h3>
+            <p>Discutez avec le studio et suivez l'avancement de votre commande.</p>
+          </article>
+          <article class="process-card reveal">
+            <span class="step">ÉTAPE 03</span>
+            <h3>La livraison</h3>
+            <p>Consultez l'aperçu, puis récupérez votre création après confirmation du paiement.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="cta-panel reveal">
+          <div>
+            <h2>Prêt à lancer votre projet ?</h2>
+            <p>Votre prochaine création commence ici.</p>
+          </div>
+          <button class="btn btn-primary" onclick="startOrder('Photo de profil')">Commencer ↗</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- CONNEXION -->
+  <section class="app-section hidden" id="authSection">
+    <div class="container">
+      <a class="back-link" onclick="showHome()">← Retour à l'accueil</a>
+      <div class="auth-wrap panel">
+        <div class="app-heading">
+          <span class="eyebrow">Votre espace</span>
+          <h2>Bienvenue.</h2>
+          <p>Connectez-vous pour retrouver vos commandes et discuter avec le studio.</p>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" id="loginTab" type="button">Connexion</button>
+          <button class="tab" id="registerTab" type="button">Créer un compte</button>
+        </div>
+
+        <form id="authForm">
+          <div class="field">
+            <label for="authUsername">Nom d'utilisateur</label>
+            <input id="authUsername" required minlength="3" maxlength="24" autocomplete="username" placeholder="Votre pseudo">
+          </div>
+          <div class="field">
+            <label for="authPassword">Mot de passe</label>
+            <input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="Votre mot de passe">
+          </div>
           <div class="notice" id="authNotice"></div>
-          <p class="muted" style="font-size:11px;margin:17px 0 0" data-i18n="accountPrivacy">Your username is visible to the studio. Never reuse an important password.</p>
-        </div>
-      </section>
+          <button class="btn btn-primary full" id="authSubmit" type="submit">Se connecter</button>
+        </form>
+      </div>
+    </div>
+  </section>
 
-      <section id="page-orders" class="hidden">
-        <div class="section-head">
-          <div><div class="eyebrow">AÉRIUM / WORKSPACE</div><h2 data-i18n="myOrdersTitle">Your projects.</h2></div>
-          <button class="btn" data-go="services" data-i18n="newProject">New project +</button>
-        </div>
-        <div id="ordersList" class="orders-list"><div class="empty" data-i18n="signInOrders">Sign in to see your orders.</div></div>
-      </section>
+  <!-- NOUVELLE COMMANDE -->
+  <section class="app-section hidden" id="orderSection">
+    <div class="container">
+      <a class="back-link" onclick="showHome()">← Retour à l'accueil</a>
 
-      <section id="page-admin" class="hidden">
-        <div class="section-head">
-          <div><div class="eyebrow">AÉRIUM / CONTROL ROOM</div><h2 data-i18n="adminTitle">Studio dashboard.</h2></div>
-          <span class="status">ADMIN ACCESS</span>
-        </div>
-        <div class="panel">
-          <p class="muted" data-i18n="adminIntro">Manage customer requests, update progress and reply to messages.</p>
-          <div id="adminOrders" class="orders-list"><div class="empty">Loading...</div></div>
-        </div>
-      </section>
-    </main>
+      <div class="app-heading">
+        <span class="eyebrow">Nouvelle commande</span>
+        <h2>Présentez votre projet.</h2>
+        <p>Donnez-nous les informations nécessaires pour comprendre votre demande.</p>
+      </div>
 
-    <footer>
-      <div>© 2026 AÉRIUM DESIGN. <span data-i18n="footerRights">All creative rights reserved.</span></div>
-      <div data-i18n="footerTag">Independent creative studio · Made with intention.</div>
-    </footer>
-  </div>
-  <div class="toast" id="toast"></div>
+      <div class="order-layout">
+        <form class="panel" id="orderForm">
+          <div class="field">
+            <label for="orderService">Type de création</label>
+            <select id="orderService" required>
+              <option value="Photo de profil">Photo de profil</option>
+              <option value="Miniature YouTube">Miniature YouTube</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="orderStyle">Style souhaité</label>
+            <select id="orderStyle" required>
+              <option value="Moderne">Moderne</option>
+              <option value="Minimaliste">Minimaliste</option>
+              <option value="Gaming">Gaming</option>
+              <option value="Sombre">Sombre</option>
+              <option value="Coloré">Coloré</option>
+              <option value="Autre / à discuter">Autre / à discuter</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="orderColors">Couleurs souhaitées</label>
+            <input id="orderColors" maxlength="120" placeholder="Ex : bleu, noir et blanc">
+          </div>
+
+          <div class="field">
+            <label for="orderText">Texte à intégrer (facultatif)</label>
+            <input id="orderText" maxlength="100" placeholder="Ex : votre pseudo">
+          </div>
+
+          <div class="field">
+            <label for="orderDescription">Description de votre idée</label>
+            <textarea id="orderDescription" required maxlength="1500" placeholder="Expliquez ce que vous imaginez..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="referenceFiles">Images de référence (facultatif)</label>
+            <input class="file-input" id="referenceFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+            <div class="file-list" id="referencePreview">Aucun fichier sélectionné.</div>
+          </div>
+
+          <div class="notice" id="orderNotice"></div>
+          <button class="btn btn-primary full" id="submitOrder" type="submit">Envoyer ma demande</button>
+        </form>
+
+        <aside class="side-info">
+          <h3>Votre commande</h3>
+          <p>Après l'envoi, vous pourrez retrouver votre demande dans votre espace client.</p>
+          <p>Le chat vous permettra d'échanger directement avec le studio pour préciser votre projet.</p>
+          <p>Les fichiers de référence sont compressés avant leur enregistrement. N'envoyez pas de documents privés ou sensibles.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESPACE CLIENT -->
+  <section class="app-section hidden" id="customerSection">
+    <div class="container">
+      <div class="dashboard-top">
+        <div>
+          <span class="eyebrow">Espace personnel</span>
+          <h2>Bonjour, <span id="customerName">client</span>.</h2>
+        </div>
+        <button class="btn btn-secondary" id="customerLogout">Déconnexion</button>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <h2 style="font-size:25px;letter-spacing:-1px">Mes commandes</h2>
+        </div>
+        <button class="btn btn-primary" onclick="startOrder('Photo de profil')">Nouvelle commande +</button>
+      </div>
+
+      <div class="orders-grid" id="customerOrders"></div>
+
+      <div class="chat-panel hidden" id="customerChatPanel">
+        <div class="chat-header">
+          <h3 id="customerChatTitle">Discussion avec le studio</h3>
+          <button class="btn btn-secondary" id="closeCustomerChat">Fermer</button>
+        </div>
+
+        <div class="chat-messages" id="customerMessages"></div>
+
+        <div class="artwork-area">
+          <h4>Vos créations</h4>
+          <div class="artwork-grid" id="customerFiles"></div>
+        </div>
+
+        <form class="chat-form" id="customerMessageForm">
+          <input id="customerMessageInput" maxlength="1000" placeholder="Écrire un message..." required>
+          <button class="btn btn-primary" type="submit">Envoyer</button>
+        </form>
+        <div class="notice" id="customerNotice"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESPACE ADMIN -->
+  <section class="app-section hidden" id="adminSection">
+    <div class="container">
+      <div class="dashboard-top">
+        <div>
+          <span class="eyebrow">Administration</span>
+          <h2>Gestion du studio.</h2>
+        </div>
+        <button class="btn btn-secondary" id="adminLogout">Déconnexion</button>
+      </div>
+
+      <div class="app-heading">
+        <h2 style="font-size:25px">Toutes les commandes</h2>
+        <p>Ouvrez une commande pour discuter, modifier son statut et envoyer une création.</p>
+      </div>
+
+      <div class="admin-layout" id="adminOrders"></div>
+
+      <div class="chat-panel hidden" id="adminChatPanel">
+        <div class="chat-header">
+          <h3 id="adminChatTitle">Discussion client</h3>
+          <button class="btn btn-secondary" id="closeAdminChat">Fermer</button>
+        </div>
+
+        <div class="chat-messages" id="adminMessages"></div>
+
+        <div class="artwork-area">
+          <h4>Fichiers de référence et créations envoyées</h4>
+          <div class="artwork-grid" id="adminFiles"></div>
+        </div>
+
+        <form class="chat-form" id="adminMessageForm">
+          <input id="adminMessageInput" maxlength="1000" placeholder="Répondre au client..." required>
+          <button class="btn btn-primary" type="submit">Envoyer</button>
+        </form>
+
+        <div class="admin-controls">
+          <div>
+            <div class="field">
+              <label for="deliveryFiles">Image finale à envoyer</label>
+              <input class="file-input" id="deliveryFiles" type="file" accept="image/png,image/jpeg,image/webp">
+            </div>
+            <button class="btn btn-primary full" id="sendDelivery" type="button">Envoyer la création</button>
+            <p style="color:var(--muted);font-size:11px;line-height:1.6;margin-top:9px">
+              Le client recevra un aperçu flouté. L'image originale restera verrouillée jusqu'à la confirmation du paiement.
+            </p>
+          </div>
+
+          <div>
+            <div class="field">
+              <label for="adminStatus">Statut de la commande</label>
+              <select id="adminStatus">
+                <option value="pending">En attente</option>
+                <option value="progress">En création</option>
+                <option value="review">À valider</option>
+                <option value="completed">Terminée</option>
+                <option value="cancelled">Annulée</option>
+              </select>
+            </div>
+            <button class="btn btn-secondary full" id="saveStatus" type="button">Enregistrer le statut</button>
+
+            <div class="payment-note" id="paymentAdminState">Paiement non confirmé.</div>
+            <button class="btn btn-primary full" id="markPaymentReceived" type="button" style="margin-top:10px">
+              Paiement reçu : débloquer l'image
+            </button>
+          </div>
+        </div>
+
+        <div class="notice" id="adminNotice"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="mainFooter">
+    <div class="container footer-inner">
+      <span>© 2026 AÉRIUM DESIGN. Tous droits réservés.</span>
+      <span>Independent creative studio.</span>
+    </div>
+  </footer>
+
   <script type="module" src="./app.js"></script>
 </body>
 </html>
