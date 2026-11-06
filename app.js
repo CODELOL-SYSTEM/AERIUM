@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
@@ -52,6 +53,9 @@ let messageUnsubscribe = null;
 let orderUnsubscribe = null;
 let isAdmin = false;
 
+let customerSelectedImage = null;
+let adminSelectedImage = null;
+
 /* HELPERS */
 
 const $ = id => document.getElementById(id);
@@ -59,6 +63,7 @@ const $ = id => document.getElementById(id);
 function showNotice(id, message, type = "error") {
   const element = $(id);
   if (!element) return;
+
   element.textContent = message;
   element.className = `notice show ${type}`;
 }
@@ -68,12 +73,9 @@ function hideNotice(id) {
   if (element) element.className = "notice";
 }
 
-function safeText(value) {
-  return String(value ?? "");
-}
-
 function formatDate(timestamp) {
   if (!timestamp?.toDate) return "Date non disponible";
+
   return timestamp.toDate().toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "long",
@@ -89,6 +91,7 @@ function statusLabel(status) {
     completed: "Terminée",
     cancelled: "Annulée"
   };
+
   return labels[status] || "En attente";
 }
 
@@ -121,19 +124,36 @@ function setPage(sectionId) {
     "adminSection"
   ];
 
-  sections.forEach(id => $(id)?.classList.add("hidden"));
+  sections.forEach(id => {
+    $(id)?.classList.add("hidden");
+  });
+
   $(sectionId)?.classList.remove("hidden");
 
-  $("mainHeader").classList.toggle("hidden", sectionId !== "publicSite");
-  $("mainFooter").classList.toggle("hidden", sectionId !== "publicSite");
+  $("mainHeader")?.classList.toggle(
+    "hidden",
+    sectionId !== "publicSite"
+  );
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  $("mainFooter")?.classList.toggle(
+    "hidden",
+    sectionId !== "publicSite"
+  );
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
 window.showApp = function(sectionId) {
   if (sectionId === "orderSection" && !currentUser) {
     setPage("authSection");
-    showNotice("authNotice", "Connectez-vous pour créer une commande.", "error");
+    showNotice(
+      "authNotice",
+      "Connectez-vous pour créer une commande.",
+      "error"
+    );
     return;
   }
 
@@ -142,13 +162,21 @@ window.showApp = function(sectionId) {
 
 window.showHome = function() {
   cleanListeners();
+  activeOrderId = null;
+  activeOrderData = null;
   setPage("publicSite");
 };
 
 window.startOrder = function(service) {
   if (!currentUser) {
     setPage("authSection");
-    showNotice("authNotice", "Connectez-vous ou créez un compte pour commander.", "error");
+
+    showNotice(
+      "authNotice",
+      "Connectez-vous ou créez un compte pour commander.",
+      "error"
+    );
+
     return;
   }
 
@@ -166,16 +194,25 @@ function setAuthMode(mode) {
   $("registerTab").classList.toggle("active", mode === "register");
 
   $("authSubmit").textContent =
-    mode === "login" ? "Se connecter" : "Créer mon compte";
+    mode === "login"
+      ? "Se connecter"
+      : "Créer mon compte";
 
   $("authPassword").autocomplete =
-    mode === "login" ? "current-password" : "new-password";
+    mode === "login"
+      ? "current-password"
+      : "new-password";
 
   hideNotice("authNotice");
 }
 
-$("loginTab").addEventListener("click", () => setAuthMode("login"));
-$("registerTab").addEventListener("click", () => setAuthMode("register"));
+$("loginTab").addEventListener("click", () => {
+  setAuthMode("login");
+});
+
+$("registerTab").addEventListener("click", () => {
+  setAuthMode("register");
+});
 
 $("authForm").addEventListener("submit", async event => {
   event.preventDefault();
@@ -185,12 +222,18 @@ $("authForm").addEventListener("submit", async event => {
   const password = $("authPassword").value;
 
   if (!validUsername(username)) {
-    showNotice("authNotice", "Le pseudo doit contenir entre 3 et 24 caractères : lettres, chiffres, tirets ou underscores.");
+    showNotice(
+      "authNotice",
+      "Le pseudo doit contenir entre 3 et 24 caractères : lettres, chiffres, tirets ou underscores."
+    );
     return;
   }
 
   if (password.length < 6) {
-    showNotice("authNotice", "Le mot de passe doit contenir au moins 6 caractères.");
+    showNotice(
+      "authNotice",
+      "Le mot de passe doit contenir au moins 6 caractères."
+    );
     return;
   }
 
@@ -203,7 +246,12 @@ $("authForm").addEventListener("submit", async event => {
         throw new Error("Ce nom d'utilisateur n'est pas disponible.");
       }
 
-      const usernameRef = doc(db, "usernames", username.toLowerCase());
+      const usernameRef = doc(
+        db,
+        "usernames",
+        username.toLowerCase()
+      );
+
       const existing = await getDoc(usernameRef);
 
       if (existing.exists()) {
@@ -218,18 +266,25 @@ $("authForm").addEventListener("submit", async event => {
 
       await setDoc(usernameRef, {
         uid: credential.user.uid,
-        username: username,
+        username,
         createdAt: serverTimestamp()
       });
 
-      await setDoc(doc(db, "profiles", credential.user.uid), {
-        uid: credential.user.uid,
-        username: username,
-        createdAt: serverTimestamp()
-      });
+      await setDoc(
+        doc(db, "profiles", credential.user.uid),
+        {
+          uid: credential.user.uid,
+          username,
+          createdAt: serverTimestamp()
+        }
+      );
 
     } else {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
     }
 
   } catch (error) {
@@ -256,7 +311,7 @@ $("authForm").addEventListener("submit", async event => {
   }
 });
 
-/* FICHIERS ET COMPRESSION */
+/* IMAGES ET COMPRESSION */
 
 function loadImage(file) {
   return new Promise((resolve, reject) => {
@@ -277,9 +332,23 @@ function loadImage(file) {
   });
 }
 
-async function imageToWebp(file, blurred = false) {
+async function imageToWebp(
+  file,
+  blurred = false,
+  maxCharacters = 650000
+) {
   if (!file || !file.type.startsWith("image/")) {
     throw new Error("Le fichier doit être une image.");
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error("Format accepté : JPG, PNG ou WEBP.");
   }
 
   const image = await loadImage(file);
@@ -291,13 +360,22 @@ async function imageToWebp(file, blurred = false) {
   );
 
   const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
+
+  canvas.width = Math.max(
+    1,
+    Math.round(image.width * scale)
+  );
+
+  canvas.height = Math.max(
+    1,
+    Math.round(image.height * scale)
+  );
 
   const context = canvas.getContext("2d");
 
   if (blurred) {
     context.filter = "blur(18px)";
+
     context.drawImage(
       image,
       -12,
@@ -305,44 +383,208 @@ async function imageToWebp(file, blurred = false) {
       canvas.width + 24,
       canvas.height + 24
     );
+
     context.filter = "none";
   } else {
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    context.drawImage(
+      image,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
   }
 
   let quality = 0.72;
   let dataUrl = canvas.toDataURL("image/webp", quality);
 
-  while (dataUrl.length > 650000 && quality > 0.25) {
+  while (
+    dataUrl.length > maxCharacters &&
+    quality > 0.20
+  ) {
     quality -= 0.08;
-    dataUrl = canvas.toDataURL("image/webp", quality);
+
+    dataUrl = canvas.toDataURL(
+      "image/webp",
+      quality
+    );
   }
 
-  if (dataUrl.length > 700000) {
-    throw new Error("Cette image est trop lourde. Choisissez une image plus petite.");
+  if (dataUrl.length > maxCharacters) {
+    throw new Error(
+      "Cette image est trop lourde. Choisissez une image plus petite."
+    );
   }
 
   return dataUrl;
 }
 
-/* AFFICHAGE DES FICHIERS DE RÉFÉRENCE */
+/* SÉLECTION DES IMAGES DU CHAT */
+
+function resetChatImage(type) {
+  if (type === "customer") {
+    customerSelectedImage = null;
+
+    if ($("customerChatImage")) {
+      $("customerChatImage").value = "";
+    }
+
+    if ($("customerImagePreview")) {
+      $("customerImagePreview").innerHTML = "";
+      $("customerImagePreview").classList.add("hidden");
+    }
+
+  } else {
+    adminSelectedImage = null;
+
+    if ($("adminChatImage")) {
+      $("adminChatImage").value = "";
+    }
+
+    if ($("adminImagePreview")) {
+      $("adminImagePreview").innerHTML = "";
+      $("adminImagePreview").classList.add("hidden");
+    }
+  }
+}
+
+function showChatImagePreview(type, file) {
+  const previewId =
+    type === "customer"
+      ? "customerImagePreview"
+      : "adminImagePreview";
+
+  const container = $(previewId);
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const image = document.createElement("img");
+  image.src = URL.createObjectURL(file);
+  image.alt = "Image sélectionnée";
+
+  image.onload = () => {
+    URL.revokeObjectURL(image.src);
+  };
+
+  const name = document.createElement("span");
+  name.textContent = file.name;
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "btn btn-secondary";
+  remove.textContent = "Retirer";
+
+  remove.addEventListener("click", () => {
+    resetChatImage(type);
+  });
+
+  container.append(image, name, remove);
+  container.classList.remove("hidden");
+}
+
+function setupChatImageInput(type) {
+  const inputId =
+    type === "customer"
+      ? "customerChatImage"
+      : "adminChatImage";
+
+  const buttonId =
+    type === "customer"
+      ? "customerAttachButton"
+      : "adminAttachButton";
+
+  const input = $(inputId);
+  const button = $(buttonId);
+
+  if (!input || !button) return;
+
+  button.addEventListener("click", () => {
+    input.click();
+  });
+
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      resetChatImage(type);
+
+      showNotice(
+        type === "customer"
+          ? "customerNotice"
+          : "adminNotice",
+        "Format accepté : JPG, PNG ou WEBP."
+      );
+
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      resetChatImage(type);
+
+      showNotice(
+        type === "customer"
+          ? "customerNotice"
+          : "adminNotice",
+        "L'image ne doit pas dépasser 8 Mo."
+      );
+
+      return;
+    }
+
+    if (type === "customer") {
+      customerSelectedImage = file;
+    } else {
+      adminSelectedImage = file;
+    }
+
+    hideNotice(
+      type === "customer"
+        ? "customerNotice"
+        : "adminNotice"
+    );
+
+    showChatImagePreview(type, file);
+  });
+}
+
+setupChatImageInput("customer");
+setupChatImageInput("admin");
+
+/* IMAGES DE RÉFÉRENCE */
 
 $("referenceFiles").addEventListener("change", () => {
   const files = [...$("referenceFiles").files];
 
   if (!files.length) {
-    $("referencePreview").textContent = "Aucun fichier sélectionné.";
+    $("referencePreview").textContent =
+      "Aucun fichier sélectionné.";
     return;
   }
 
   if (files.length > 3) {
     $("referenceFiles").value = "";
-    $("referencePreview").textContent = "Maximum 3 images.";
+
+    $("referencePreview").textContent =
+      "Maximum 3 images.";
+
     return;
   }
 
-  $("referencePreview").textContent =
-    files.map(file => `${file.name} (${Math.round(file.size / 1024)} Ko)`).join(" • ");
+  $("referencePreview").textContent = files
+    .map(file =>
+      `${file.name} (${Math.round(file.size / 1024)} Ko)`
+    )
+    .join(" • ");
 });
 
 /* CRÉATION DE COMMANDE */
@@ -360,7 +602,10 @@ $("orderForm").addEventListener("submit", async event => {
   const files = [...$("referenceFiles").files];
 
   if (files.length > 3) {
-    showNotice("orderNotice", "Vous pouvez ajouter 3 images maximum.");
+    showNotice(
+      "orderNotice",
+      "Vous pouvez ajouter 3 images maximum."
+    );
     return;
   }
 
@@ -385,41 +630,61 @@ $("orderForm").addEventListener("submit", async event => {
     });
 
     for (const file of files) {
-      const dataUrl = await imageToWebp(file, false);
+      const dataUrl = await imageToWebp(
+        file,
+        false,
+        450000
+      );
 
-      await addDoc(collection(db, "orders", orderRef.id, "references"), {
-        uid: currentUser.uid,
-        name: file.name.slice(0, 100),
-        mime: "image/webp",
-        dataUrl,
-        createdAt: serverTimestamp()
-      });
+      await addDoc(
+        collection(db, "orders", orderRef.id, "references"),
+        {
+          uid: currentUser.uid,
+          name: file.name.slice(0, 100),
+          mime: "image/webp",
+          dataUrl,
+          createdAt: serverTimestamp()
+        }
+      );
     }
 
     $("orderForm").reset();
-    $("referencePreview").textContent = "Aucun fichier sélectionné.";
 
-    showNotice("orderNotice", "Votre demande a bien été envoyée.", "success");
+    $("referencePreview").textContent =
+      "Aucun fichier sélectionné.";
+
+    showNotice(
+      "orderNotice",
+      "Votre demande a bien été envoyée.",
+      "success"
+    );
 
     await loadCustomerOrders();
     setPage("customerSection");
 
   } catch (error) {
     console.error(error);
-    showNotice("orderNotice", error.message || "Impossible d'envoyer votre commande.");
+
+    showNotice(
+      "orderNotice",
+      error.message || "Impossible d'envoyer votre commande."
+    );
+
   } finally {
     $("submitOrder").disabled = false;
     $("submitOrder").textContent = "Envoyer ma demande";
   }
 });
 
-/* LISTE DES COMMANDES CLIENT */
+/* COMMANDES CLIENT */
 
 async function loadCustomerOrders() {
   if (!currentUser) return;
 
   const container = $("customerOrders");
-  container.innerHTML = `<div class="empty">Chargement de vos commandes...</div>`;
+
+  container.innerHTML =
+    `<div class="empty">Chargement de vos commandes...</div>`;
 
   try {
     const q = query(
@@ -437,11 +702,14 @@ async function loadCustomerOrders() {
     orders.sort((a, b) => {
       const aDate = a.createdAt?.toMillis?.() || 0;
       const bDate = b.createdAt?.toMillis?.() || 0;
+
       return bDate - aDate;
     });
 
     if (!orders.length) {
-      container.innerHTML = `<div class="empty">Vous n'avez pas encore de commande.</div>`;
+      container.innerHTML =
+        `<div class="empty">Vous n'avez pas encore de commande.</div>`;
+
       return;
     }
 
@@ -459,7 +727,8 @@ async function loadCustomerOrders() {
         `${statusLabel(order.status)} • ${formatDate(order.createdAt)}`;
 
       const style = document.createElement("p");
-      style.textContent = `Style : ${order.style || "Non précisé"}`;
+      style.textContent =
+        `Style : ${order.style || "Non précisé"}`;
 
       const badge = document.createElement("span");
       badge.className = "status";
@@ -471,40 +740,80 @@ async function loadCustomerOrders() {
       const openButton = document.createElement("button");
       openButton.className = "btn btn-primary";
       openButton.textContent = "Ouvrir la discussion";
-      openButton.addEventListener("click", () => openCustomerChat(order.id));
+
+      openButton.addEventListener("click", () => {
+        openCustomerChat(order.id);
+      });
 
       actions.append(openButton);
-      card.append(title, badge, description, style, actions);
+
+      card.append(
+        title,
+        badge,
+        description,
+        style,
+        actions
+      );
+
       container.append(card);
     });
 
   } catch (error) {
     console.error(error);
-    container.innerHTML = `<div class="empty">Impossible de charger vos commandes.</div>`;
+
+    container.innerHTML =
+      `<div class="empty">Impossible de charger vos commandes.</div>`;
   }
 }
 
-/* CHAT */
+/* CHAT : ENVOI DE MESSAGE OU IMAGE */
 
-async function sendMessage(orderId, text) {
+async function sendMessage(orderId, text, imageFile = null) {
   const clean = text.trim();
 
-  if (!clean || !currentUser || !orderId) return;
+  if (!currentUser || !orderId) {
+    throw new Error("Aucune discussion ouverte.");
+  }
+
+  if (!clean && !imageFile) {
+    throw new Error("Écrivez un message ou ajoutez une image.");
+  }
 
   if (clean.length > 1000) {
     throw new Error("Le message est trop long.");
   }
 
-  await addDoc(collection(db, "orders", orderId, "messages"), {
+  const messageData = {
     uid: currentUser.uid,
     username: currentUsername,
     text: clean,
     createdAt: serverTimestamp()
-  });
+  };
+
+  if (imageFile) {
+    const imageDataUrl = await imageToWebp(
+      imageFile,
+      false,
+      400000
+    );
+
+    messageData.imageDataUrl = imageDataUrl;
+    messageData.imageName = imageFile.name.slice(0, 100);
+    messageData.imageMime = "image/webp";
+  }
+
+  await addDoc(
+    collection(db, "orders", orderId, "messages"),
+    messageData
+  );
 }
 
+/* CHAT : AFFICHAGE DES MESSAGES */
+
 function listenMessages(orderId, containerId) {
-  if (messageUnsubscribe) messageUnsubscribe();
+  if (messageUnsubscribe) {
+    messageUnsubscribe();
+  }
 
   const q = query(
     collection(db, "orders", orderId, "messages")
@@ -519,73 +828,182 @@ function listenMessages(orderId, containerId) {
     messages.sort((a, b) => {
       const aDate = a.createdAt?.toMillis?.() || 0;
       const bDate = b.createdAt?.toMillis?.() || 0;
+
       return aDate - bDate;
     });
 
     const container = $(containerId);
+
+    if (!container) return;
+
     container.innerHTML = "";
 
     if (!messages.length) {
-      container.innerHTML = `<div class="empty">Aucun message pour le moment.</div>`;
+      container.innerHTML =
+        `<div class="empty">Aucun message pour le moment.</div>`;
+
       return;
     }
 
     messages.forEach(message => {
       const item = document.createElement("div");
+
       item.className =
-        "message" + (message.uid === currentUser.uid ? " mine" : "");
+        "message" +
+        (message.uid === currentUser.uid ? " mine" : "");
 
       const author = document.createElement("small");
       author.textContent = message.username || "Utilisateur";
 
-      const content = document.createElement("p");
-      content.textContent = message.text || "";
+      item.append(author);
 
-      item.append(author, content);
+      if (message.text) {
+        const content = document.createElement("p");
+        content.textContent = message.text;
+        item.append(content);
+      }
+
+      if (message.imageDataUrl) {
+        const imageLink = document.createElement("a");
+
+        imageLink.href = message.imageDataUrl;
+        imageLink.target = "_blank";
+        imageLink.rel = "noopener noreferrer";
+
+        const image = document.createElement("img");
+
+        image.src = message.imageDataUrl;
+        image.alt = message.imageName || "Image envoyée";
+        image.className = "message-image";
+        image.loading = "lazy";
+
+        imageLink.append(image);
+        item.append(imageLink);
+
+        if (message.imageName) {
+          const imageName = document.createElement("small");
+          imageName.textContent = message.imageName;
+          item.append(imageName);
+        }
+      }
+
       container.append(item);
     });
 
     container.scrollTop = container.scrollHeight;
+
   }, error => {
     console.error(error);
-    container.innerHTML = `<div class="empty">Impossible de charger les messages.</div>`;
+
+    const container = $(containerId);
+
+    if (container) {
+      container.innerHTML =
+        `<div class="empty">Impossible de charger les messages.</div>`;
+    }
   });
 }
 
+/* CHAT CLIENT */
+
 $("customerMessageForm").addEventListener("submit", async event => {
   event.preventDefault();
+
   if (!activeOrderId) return;
 
   const input = $("customerMessageInput");
+  const button = $("customerMessageForm").querySelector(
+    'button[type="submit"]'
+  );
+
   const value = input.value;
+  const imageFile = customerSelectedImage;
+
+  if (!value.trim() && !imageFile) {
+    showNotice(
+      "customerNotice",
+      "Écrivez un message ou ajoutez une image."
+    );
+    return;
+  }
+
+  if (button) button.disabled = true;
 
   try {
-    await sendMessage(activeOrderId, value);
+    await sendMessage(
+      activeOrderId,
+      value,
+      imageFile
+    );
+
     input.value = "";
+    resetChatImage("customer");
     hideNotice("customerNotice");
+
   } catch (error) {
-    showNotice("customerNotice", error.message || "Impossible d'envoyer le message.");
+    console.error(error);
+
+    showNotice(
+      "customerNotice",
+      error.message || "Impossible d'envoyer le message."
+    );
+
+  } finally {
+    if (button) button.disabled = false;
   }
 });
+
+/* CHAT ADMIN */
 
 $("adminMessageForm").addEventListener("submit", async event => {
   event.preventDefault();
+
   if (!activeOrderId || !isAdmin) return;
 
   const input = $("adminMessageInput");
+  const button = $("adminMessageForm").querySelector(
+    'button[type="submit"]'
+  );
+
+  const imageFile = adminSelectedImage;
+
+  if (!input.value.trim() && !imageFile) {
+    showNotice(
+      "adminNotice",
+      "Écrivez un message ou ajoutez une image."
+    );
+    return;
+  }
+
+  if (button) button.disabled = true;
 
   try {
-    await sendMessage(activeOrderId, input.value);
+    await sendMessage(
+      activeOrderId,
+      input.value,
+      imageFile
+    );
+
     input.value = "";
+    resetChatImage("admin");
     hideNotice("adminNotice");
+
   } catch (error) {
-    showNotice("adminNotice", error.message || "Impossible d'envoyer le message.");
+    console.error(error);
+
+    showNotice(
+      "adminNotice",
+      error.message || "Impossible d'envoyer le message."
+    );
+
+  } finally {
+    if (button) button.disabled = false;
   }
 });
 
-/* CLIENT : APERÇUS ET LIVRAISONS */
+/* CRÉATIONS CLIENT */
 
-function createArtworkCard(name, dataUrl, isLocked, deliveryId = "") {
+function createArtworkCard(name, dataUrl, isLocked) {
   const card = document.createElement("div");
   card.className = "artwork-card";
 
@@ -600,6 +1018,7 @@ function createArtworkCard(name, dataUrl, isLocked, deliveryId = "") {
 
   if (isLocked) {
     const link = document.createElement("a");
+
     link.href = PAYPAL_URL;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
@@ -608,15 +1027,20 @@ function createArtworkCard(name, dataUrl, isLocked, deliveryId = "") {
 
     const note = document.createElement("div");
     note.className = "payment-note";
-    note.textContent = "Après votre paiement, le studio vérifiera la réception et débloquera votre image.";
+
+    note.textContent =
+      "Après votre paiement, le studio vérifiera la réception et débloquera votre image.";
 
     card.append(link, note);
+
   } else {
     const download = document.createElement("a");
+
     download.href = dataUrl;
     download.download = name || "creation-aerium.webp";
     download.className = "btn btn-primary";
     download.textContent = "Télécharger l'image";
+
     card.append(download);
   }
 
@@ -625,7 +1049,9 @@ function createArtworkCard(name, dataUrl, isLocked, deliveryId = "") {
 
 async function loadCustomerArtwork(orderId, paid) {
   const container = $("customerFiles");
-  container.innerHTML = `<div class="empty">Chargement des créations...</div>`;
+
+  container.innerHTML =
+    `<div class="empty">Chargement des créations...</div>`;
 
   try {
     const previewsSnap = await getDocs(
@@ -652,6 +1078,7 @@ async function loadCustomerArtwork(orderId, paid) {
 
         if (deliverySnap.exists()) {
           const delivery = deliverySnap.data();
+
           container.append(
             createArtworkCard(
               delivery.name || preview.name || "Création",
@@ -660,35 +1087,43 @@ async function loadCustomerArtwork(orderId, paid) {
             )
           );
         }
+
       } else {
         container.append(
           createArtworkCard(
             preview.name || "Aperçu de votre création",
             preview.dataUrl,
-            true,
-            preview.deliveryId
+            true
           )
         );
       }
     }
 
     if (!container.children.length) {
-      container.innerHTML = `<div class="empty">Aucune création envoyée pour le moment.</div>`;
+      container.innerHTML =
+        `<div class="empty">Aucune création envoyée pour le moment.</div>`;
     }
 
   } catch (error) {
     console.error(error);
-    container.innerHTML = `<div class="empty">Impossible de charger les créations.</div>`;
+
+    container.innerHTML =
+      `<div class="empty">Impossible de charger les créations.</div>`;
   }
 }
+
+/* OUVERTURE CHAT CLIENT */
 
 async function openCustomerChat(orderId) {
   cleanListeners();
 
   activeOrderId = orderId;
 
+  resetChatImage("customer");
+
   try {
-    const orderSnap = await getDoc(doc(db, "orders", orderId));
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnap = await getDoc(orderRef);
 
     if (!orderSnap.exists()) {
       throw new Error("Cette commande n'existe plus.");
@@ -702,11 +1137,35 @@ async function openCustomerChat(orderId) {
 
     activeOrderData = order;
 
-    $("customerChatTitle").textContent = `Discussion : ${order.service}`;
+    $("customerChatTitle").textContent =
+      `Discussion : ${order.service}`;
+
     $("customerChatPanel").classList.remove("hidden");
 
     listenMessages(orderId, "customerMessages");
-    await loadCustomerArtwork(orderId, order.paymentReceived === true);
+
+    await loadCustomerArtwork(
+      orderId,
+      order.paymentReceived === true
+    );
+
+    orderUnsubscribe = onSnapshot(orderRef, async snapshot => {
+      if (!snapshot.exists()) return;
+
+      const updatedOrder = snapshot.data();
+
+      const wasPaid =
+        activeOrderData?.paymentReceived === true;
+
+      activeOrderData = updatedOrder;
+
+      if (
+        !wasPaid &&
+        updatedOrder.paymentReceived === true
+      ) {
+        await loadCustomerArtwork(orderId, true);
+      }
+    });
 
     $("customerChatPanel").scrollIntoView({
       behavior: "smooth",
@@ -715,13 +1174,21 @@ async function openCustomerChat(orderId) {
 
   } catch (error) {
     console.error(error);
-    alert(error.message || "Impossible d'ouvrir cette discussion.");
+
+    alert(
+      error.message || "Impossible d'ouvrir cette discussion."
+    );
   }
 }
 
 $("closeCustomerChat").addEventListener("click", () => {
   cleanListeners();
+
   activeOrderId = null;
+  activeOrderData = null;
+
+  resetChatImage("customer");
+
   $("customerChatPanel").classList.add("hidden");
 });
 
@@ -731,10 +1198,14 @@ async function loadAdminOrders() {
   if (!isAdmin) return;
 
   const container = $("adminOrders");
-  container.innerHTML = `<div class="empty">Chargement des commandes...</div>`;
+
+  container.innerHTML =
+    `<div class="empty">Chargement des commandes...</div>`;
 
   try {
-    const snapshot = await getDocs(collection(db, "orders"));
+    const snapshot = await getDocs(
+      collection(db, "orders")
+    );
 
     const orders = snapshot.docs.map(item => ({
       id: item.id,
@@ -744,13 +1215,16 @@ async function loadAdminOrders() {
     orders.sort((a, b) => {
       const aDate = a.createdAt?.toMillis?.() || 0;
       const bDate = b.createdAt?.toMillis?.() || 0;
+
       return bDate - aDate;
     });
 
     container.innerHTML = "";
 
     if (!orders.length) {
-      container.innerHTML = `<div class="empty">Aucune commande reçue.</div>`;
+      container.innerHTML =
+        `<div class="empty">Aucune commande reçue.</div>`;
+
       return;
     }
 
@@ -761,18 +1235,25 @@ async function loadAdminOrders() {
       const info = document.createElement("div");
 
       const title = document.createElement("h3");
-      title.textContent = `${order.service || "Commande"} • ${order.username || "Client"}`;
+
+      title.textContent =
+        `${order.service || "Commande"} • ${order.username || "Client"}`;
 
       const description = document.createElement("p");
+
       description.textContent =
         `${statusLabel(order.status)} • ${formatDate(order.createdAt)} • ${order.paymentReceived ? "Payé" : "Non payé"}`;
 
       info.append(title, description);
 
       const button = document.createElement("button");
+
       button.className = "btn btn-primary";
       button.textContent = "Ouvrir";
-      button.addEventListener("click", () => openAdminChat(order.id));
+
+      button.addEventListener("click", () => {
+        openAdminChat(order.id);
+      });
 
       card.append(info, button);
       container.append(card);
@@ -780,7 +1261,9 @@ async function loadAdminOrders() {
 
   } catch (error) {
     console.error(error);
-    container.innerHTML = `<div class="empty">Impossible de charger les commandes. Vérifiez les règles Firestore.</div>`;
+
+    container.innerHTML =
+      `<div class="empty">Impossible de charger les commandes. Vérifiez les règles Firestore.</div>`;
   }
 }
 
@@ -788,10 +1271,16 @@ async function loadAdminOrders() {
 
 async function loadAdminArtwork(orderId) {
   const container = $("adminFiles");
-  container.innerHTML = `<div class="empty">Chargement...</div>`;
+
+  container.innerHTML =
+    `<div class="empty">Chargement...</div>`;
 
   try {
-    const [referencesSnap, previewsSnap, deliveriesSnap] = await Promise.all([
+    const [
+      referencesSnap,
+      previewsSnap,
+      deliveriesSnap
+    ] = await Promise.all([
       getDocs(collection(db, "orders", orderId, "references")),
       getDocs(collection(db, "orders", orderId, "previews")),
       getDocs(collection(db, "orders", orderId, "deliveries"))
@@ -801,6 +1290,7 @@ async function loadAdminArtwork(orderId) {
 
     referencesSnap.forEach(item => {
       const file = item.data();
+
       if (file.dataUrl) {
         container.append(
           createArtworkCard(
@@ -814,6 +1304,7 @@ async function loadAdminArtwork(orderId) {
 
     previewsSnap.forEach(item => {
       const file = item.data();
+
       if (file.dataUrl) {
         container.append(
           createArtworkCard(
@@ -827,6 +1318,7 @@ async function loadAdminArtwork(orderId) {
 
     deliveriesSnap.forEach(item => {
       const file = item.data();
+
       if (file.dataUrl) {
         container.append(
           createArtworkCard(
@@ -839,12 +1331,15 @@ async function loadAdminArtwork(orderId) {
     });
 
     if (!container.children.length) {
-      container.innerHTML = `<div class="empty">Aucun fichier pour cette commande.</div>`;
+      container.innerHTML =
+        `<div class="empty">Aucun fichier pour cette commande.</div>`;
     }
 
   } catch (error) {
     console.error(error);
-    container.innerHTML = `<div class="empty">Impossible de charger les fichiers.</div>`;
+
+    container.innerHTML =
+      `<div class="empty">Impossible de charger les fichiers.</div>`;
   }
 }
 
@@ -857,20 +1352,25 @@ async function openAdminChat(orderId) {
 
   activeOrderId = orderId;
 
+  resetChatImage("admin");
+
   try {
-    const snap = await getDoc(doc(db, "orders", orderId));
+    const orderRef = doc(db, "orders", orderId);
+    const snap = await getDoc(orderRef);
 
     if (!snap.exists()) {
       throw new Error("Commande introuvable.");
     }
 
     const order = snap.data();
+
     activeOrderData = order;
 
     $("adminChatTitle").textContent =
       `${order.service || "Commande"} • ${order.username || "Client"}`;
 
-    $("adminStatus").value = order.status || "pending";
+    $("adminStatus").value =
+      order.status || "pending";
 
     $("sendDelivery").textContent =
       order.service === "Photo de profil"
@@ -884,14 +1384,41 @@ async function openAdminChat(orderId) {
         ? "Paiement confirmé. L'image originale est débloquée."
         : "Paiement non confirmé. L'image originale est verrouillée.";
 
-    $("markPaymentReceived").disabled = order.paymentReceived === true;
+    $("markPaymentReceived").disabled =
+      order.paymentReceived === true;
+
     $("markPaymentReceived").textContent =
-      order.paymentReceived ? "Paiement déjà confirmé" : "Paiement reçu : débloquer l'image";
+      order.paymentReceived
+        ? "Paiement déjà confirmé"
+        : "Paiement reçu : débloquer l'image";
 
     $("adminChatPanel").classList.remove("hidden");
 
     listenMessages(orderId, "adminMessages");
+
     await loadAdminArtwork(orderId);
+
+    orderUnsubscribe = onSnapshot(orderRef, snapshot => {
+      if (!snapshot.exists()) return;
+
+      activeOrderData = snapshot.data();
+
+      $("adminStatus").value =
+        activeOrderData.status || "pending";
+
+      $("paymentAdminState").textContent =
+        activeOrderData.paymentReceived
+          ? "Paiement confirmé. L'image originale est débloquée."
+          : "Paiement non confirmé. L'image originale est verrouillée.";
+
+      $("markPaymentReceived").disabled =
+        activeOrderData.paymentReceived === true;
+
+      $("markPaymentReceived").textContent =
+        activeOrderData.paymentReceived
+          ? "Paiement déjà confirmé"
+          : "Paiement reçu : débloquer l'image";
+    });
 
     $("adminChatPanel").scrollIntoView({
       behavior: "smooth",
@@ -900,14 +1427,21 @@ async function openAdminChat(orderId) {
 
   } catch (error) {
     console.error(error);
-    alert(error.message || "Impossible d'ouvrir cette commande.");
+
+    alert(
+      error.message || "Impossible d'ouvrir cette commande."
+    );
   }
 }
 
 $("closeAdminChat").addEventListener("click", () => {
   cleanListeners();
+
   activeOrderId = null;
   activeOrderData = null;
+
+  resetChatImage("admin");
+
   $("adminChatPanel").classList.add("hidden");
 });
 
@@ -921,16 +1455,30 @@ $("sendDelivery").addEventListener("click", async () => {
   const file = $("deliveryFiles").files[0];
 
   if (!file) {
-    showNotice("adminNotice", "Choisissez d'abord une image.");
+    showNotice(
+      "adminNotice",
+      "Choisissez d'abord une image."
+    );
+
     return;
   }
 
   $("sendDelivery").disabled = true;
-  $("sendDelivery").textContent = "Préparation de l'image...";
+  $("sendDelivery").textContent =
+    "Préparation de l'image...";
 
   try {
-    const originalDataUrl = await imageToWebp(file, false);
-    const blurredDataUrl = await imageToWebp(file, true);
+    const originalDataUrl = await imageToWebp(
+      file,
+      false,
+      450000
+    );
+
+    const blurredDataUrl = await imageToWebp(
+      file,
+      true,
+      450000
+    );
 
     const deliveryRef = doc(
       collection(db, "orders", activeOrderId, "deliveries")
@@ -959,13 +1507,22 @@ $("sendDelivery").addEventListener("click", async () => {
 
     $("deliveryFiles").value = "";
 
-    showNotice("adminNotice", "Aperçu envoyé au client. L'original reste verrouillé.", "success");
+    showNotice(
+      "adminNotice",
+      "Aperçu envoyé au client. L'original reste verrouillé.",
+      "success"
+    );
 
     await loadAdminArtwork(activeOrderId);
 
   } catch (error) {
     console.error(error);
-    showNotice("adminNotice", error.message || "Impossible d'envoyer cette image.");
+
+    showNotice(
+      "adminNotice",
+      error.message || "Impossible d'envoyer cette image."
+    );
+
   } finally {
     $("sendDelivery").disabled = false;
 
@@ -986,44 +1543,68 @@ $("saveStatus").addEventListener("click", async () => {
   if (!isAdmin || !activeOrderId) return;
 
   try {
-    await updateDoc(doc(db, "orders", activeOrderId), {
-      status: $("adminStatus").value,
-      updatedAt: serverTimestamp()
-    });
+    await updateDoc(
+      doc(db, "orders", activeOrderId),
+      {
+        status: $("adminStatus").value,
+        updatedAt: serverTimestamp()
+      }
+    );
 
-    activeOrderData.status = $("adminStatus").value;
-    showNotice("adminNotice", "Statut mis à jour.", "success");
+    activeOrderData.status =
+      $("adminStatus").value;
+
+    showNotice(
+      "adminNotice",
+      "Statut mis à jour.",
+      "success"
+    );
+
     await loadAdminOrders();
 
   } catch (error) {
     console.error(error);
-    showNotice("adminNotice", "Impossible de modifier le statut.");
+
+    showNotice(
+      "adminNotice",
+      "Impossible de modifier le statut."
+    );
   }
 });
 
 /* ADMIN : CONFIRMATION DU PAIEMENT */
 
 $("markPaymentReceived").addEventListener("click", async () => {
-  if (!isAdmin || !activeOrderId || !activeOrderData) return;
+  if (!isAdmin || !activeOrderId || !activeOrderData) {
+    return;
+  }
 
   if (activeOrderData.paymentReceived === true) {
-    showNotice("adminNotice", "Ce paiement est déjà confirmé.", "success");
+    showNotice(
+      "adminNotice",
+      "Ce paiement est déjà confirmé.",
+      "success"
+    );
+
     return;
   }
 
   const confirmed = confirm(
-    "As-tu vérifié dans PayPal que le paiement a bien été reçu ?"
+    "As-tu vérifié que le paiement a bien été reçu ?"
   );
 
   if (!confirmed) return;
 
   try {
-    await updateDoc(doc(db, "orders", activeOrderId), {
-      paymentReceived: true,
-      paymentConfirmedAt: serverTimestamp(),
-      paymentConfirmedBy: currentUser.uid,
-      updatedAt: serverTimestamp()
-    });
+    await updateDoc(
+      doc(db, "orders", activeOrderId),
+      {
+        paymentReceived: true,
+        paymentConfirmedAt: serverTimestamp(),
+        paymentConfirmedBy: currentUser.uid,
+        updatedAt: serverTimestamp()
+      }
+    );
 
     activeOrderData.paymentReceived = true;
 
@@ -1031,16 +1612,26 @@ $("markPaymentReceived").addEventListener("click", async () => {
       "Paiement confirmé. L'image originale est débloquée.";
 
     $("markPaymentReceived").disabled = true;
-    $("markPaymentReceived").textContent = "Paiement déjà confirmé";
 
-    showNotice("adminNotice", "Paiement confirmé. Le client peut maintenant télécharger l'image.", "success");
+    $("markPaymentReceived").textContent =
+      "Paiement déjà confirmé";
+
+    showNotice(
+      "adminNotice",
+      "Paiement confirmé. Le client peut maintenant télécharger l'image.",
+      "success"
+    );
 
     await loadAdminArtwork(activeOrderId);
     await loadAdminOrders();
 
   } catch (error) {
     console.error(error);
-    showNotice("adminNotice", "Impossible de confirmer le paiement.");
+
+    showNotice(
+      "adminNotice",
+      "Impossible de confirmer le paiement."
+    );
   }
 });
 
@@ -1062,8 +1653,10 @@ onAuthStateChanged(auth, async user => {
   currentUser = user;
   currentUsername = "";
   isAdmin = false;
+
   activeOrderId = null;
   activeOrderData = null;
+
   cleanListeners();
 
   if (!user) {
@@ -1075,24 +1668,34 @@ onAuthStateChanged(auth, async user => {
 
   if (isAdmin) {
     currentUsername = "POE13";
-    $("customerName").textContent = currentUsername;
+
+    $("customerName").textContent =
+      currentUsername;
+
     setPage("adminSection");
+
     await loadAdminOrders();
     return;
   }
 
   try {
-    const profileSnap = await getDoc(doc(db, "profiles", user.uid));
+    const profileSnap = await getDoc(
+      doc(db, "profiles", user.uid)
+    );
 
     if (profileSnap.exists()) {
-      currentUsername = profileSnap.data().username || "Client";
+      currentUsername =
+        profileSnap.data().username || "Client";
     } else {
-      currentUsername = user.email?.split("@")[0] || "Client";
+      currentUsername =
+        user.email?.split("@")[0] || "Client";
     }
 
-    $("customerName").textContent = currentUsername;
+    $("customerName").textContent =
+      currentUsername;
 
     setPage("customerSection");
+
     await loadCustomerOrders();
 
   } catch (error) {
