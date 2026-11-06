@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -257,9 +258,7 @@
       margin-bottom: 5px;
     }
 
-    .section {
-      padding: 105px 0;
-    }
+    .section { padding: 105px 0; }
 
     .section-heading {
       display: flex;
@@ -425,9 +424,7 @@
       animation: sectionEnter .35s ease both;
     }
 
-    .app-heading {
-      margin-bottom: 30px;
-    }
+    .app-heading { margin-bottom: 30px; }
 
     .app-heading h2 {
       margin: 12px 0;
@@ -479,9 +476,7 @@
       background: var(--surface-2);
     }
 
-    .field {
-      margin-bottom: 17px;
-    }
+    .field { margin-bottom: 17px; }
 
     .field label {
       display: block;
@@ -524,6 +519,7 @@
     }
 
     .notice.show { display: block; }
+
     .notice.error {
       color: #ffb9b9;
       background: rgba(255,70,70,.09);
@@ -563,6 +559,7 @@
     }
 
     .side-info h3 { margin: 0 0 12px; }
+
     .side-info p {
       color: var(--muted);
       font-size: 13px;
@@ -612,6 +609,7 @@
     }
 
     .order-card h3 { margin: 0 0 9px; font-size: 16px; }
+
     .order-card p {
       color: var(--muted);
       font-size: 12px;
@@ -794,6 +792,7 @@
     }
 
     .admin-order h3 { margin: 0 0 6px; font-size: 14px; }
+
     .admin-order p {
       margin: 0;
       color: var(--muted);
@@ -820,7 +819,88 @@
       font-size: 13px;
     }
 
-    .hidden { display: none !important; }
+    /* NOUVEAU : IMAGES DANS LE CHAT */
+
+    .chat-attachment {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 15px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.015);
+    }
+
+    .chat-attachment label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-width: 42px;
+      height: 42px;
+      padding: 0 13px;
+      color: white;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .chat-attachment label:hover {
+      border-color: var(--blue);
+      background: rgba(101,133,255,.12);
+    }
+
+    .chat-attachment input[type="file"] {
+      display: none;
+    }
+
+    .chat-image-preview {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .chat-image-preview.visible { display: flex; }
+
+    .chat-image-preview img {
+      width: 55px;
+      height: 55px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .chat-image-preview button {
+      margin-left: auto;
+      color: #ff9292;
+      background: transparent;
+      border: 0;
+      font-size: 19px;
+    }
+
+    .message-image {
+      display: block;
+      max-width: 100%;
+      width: 280px;
+      max-height: 300px;
+      object-fit: contain;
+      margin-top: 10px;
+      border-radius: 10px;
+      background: #080a0f;
+      border: 1px solid var(--line);
+    }
+
+    .message-image-link {
+      display: block;
+      cursor: pointer;
+    }
 
     .reveal {
       opacity: 0;
@@ -883,6 +963,8 @@
       .chat-form button { width: 100%; }
       .admin-order { align-items: flex-start; flex-direction: column; }
       .admin-controls { grid-template-columns: 1fr; }
+      .message { max-width: 90%; }
+      .message-image { width: 100%; }
     }
   </style>
 </head>
@@ -1137,8 +1219,21 @@
           <div class="artwork-grid" id="customerFiles"></div>
         </div>
 
+        <!-- APERÇU IMAGE CLIENT -->
+        <div class="chat-image-preview" id="customerImagePreview">
+          <img id="customerImagePreviewImg" alt="Aperçu de l'image">
+          <span id="customerImagePreviewName"></span>
+          <button type="button" id="customerRemoveImage" title="Retirer l'image">×</button>
+        </div>
+
+        <div class="chat-attachment">
+          <label for="customerImageInput">＋ Image</label>
+          <input type="file" id="customerImageInput" accept="image/png,image/jpeg,image/webp">
+          <span style="color:var(--muted);font-size:11px">PNG, JPG ou WebP</span>
+        </div>
+
         <form class="chat-form" id="customerMessageForm">
-          <input id="customerMessageInput" maxlength="1000" placeholder="Écrire un message..." required>
+          <input id="customerMessageInput" maxlength="1000" placeholder="Écrire un message...">
           <button class="btn btn-primary" type="submit">Envoyer</button>
         </form>
         <div class="notice" id="customerNotice"></div>
@@ -1177,8 +1272,21 @@
           <div class="artwork-grid" id="adminFiles"></div>
         </div>
 
+        <!-- APERÇU IMAGE ADMIN -->
+        <div class="chat-image-preview" id="adminImagePreview">
+          <img id="adminImagePreviewImg" alt="Aperçu de l'image">
+          <span id="adminImagePreviewName"></span>
+          <button type="button" id="adminRemoveImage" title="Retirer l'image">×</button>
+        </div>
+
+        <div class="chat-attachment">
+          <label for="adminImageInput">＋ Image</label>
+          <input type="file" id="adminImageInput" accept="image/png,image/jpeg,image/webp">
+          <span style="color:var(--muted);font-size:11px">PNG, JPG ou WebP</span>
+        </div>
+
         <form class="chat-form" id="adminMessageForm">
-          <input id="adminMessageInput" maxlength="1000" placeholder="Répondre au client..." required>
+          <input id="adminMessageInput" maxlength="1000" placeholder="Répondre au client...">
           <button class="btn btn-primary" type="submit">Envoyer</button>
         </form>
 
